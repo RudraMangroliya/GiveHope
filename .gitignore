@@ -26,6 +26,8 @@ out/
 .env.production.local
 *.env
 *.env.local
+*.env.example
+*env.example
 server/.env
 client/.env
 
