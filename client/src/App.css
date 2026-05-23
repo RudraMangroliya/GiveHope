@@ -1,0 +1,341 @@
+.counter {
+  font-size: 16px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: var(--accent);
+  background: var(--accent-bg);
+  border: 2px solid transparent;
+  transition: border-color 0.3s;
+  margin-bottom: 24px;
+
+  &:hover {
+    border-color: var(--accent-border);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+.hero {
+  position: relative;
+
+  .base,
+  .framework,
+  .vite {
+    inset-inline: 0;
+    margin: 0 auto;
+  }
+
+  .base {
+    width: 170px;
+    position: relative;
+    z-index: 0;
+  }
+
+  .framework,
+  .vite {
+    position: absolute;
+  }
+
+  .framework {
+    z-index: 1;
+    top: 34px;
+    height: 28px;
+    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
+      scale(1.4);
+  }
+
+  .vite {
+    z-index: 0;
+    top: 107px;
+    height: 26px;
+    width: auto;
+    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
+      scale(0.8);
+  }
+}
+
+#center {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  place-content: center;
+  place-items: center;
+  flex-grow: 1;
+
+  @media (max-width: 1024px) {
+    padding: 32px 20px 24px;
+    gap: 18px;
+  }
+}
+
+#next-steps {
+  display: flex;
+  border-top: 1px solid var(--border);
+  text-align: left;
+
+  & > div {
+    flex: 1 1 0;
+    padding: 32px;
+    @media (max-width: 1024px) {
+      padding: 24px 20px;
+    }
+  }
+
+  .icon {
+    margin-bottom: 16px;
+    width: 22px;
+    height: 22px;
+  }
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+#docs {
+  border-right: 1px solid var(--border);
+
+  @media (max-width: 1024px) {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+#next-steps ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 8px;
+  margin: 32px 0 0;
+
+  .logo {
+    height: 18px;
+  }
+
+  a {
+    color: var(--text-h);
+    font-size: 16px;
+    border-radius: 6px;
+    background: var(--social-bg);
+    display: flex;
+    padding: 6px 12px;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: box-shadow 0.3s;
+
+    &:hover {
+      box-shadow: var(--shadow);
+    }
+    .button-icon {
+      height: 18px;
+      width: 18px;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    li {
+      flex: 1 1 calc(50% - 8px);
+    }
+
+    a {
+      width: 100%;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+  }
+}
+
+#spacer {
+  height: 88px;
+  border-top: 1px solid var(--border);
+  @media (max-width: 1024px) {
+    height: 48px;
+  }
+}
+
+.ticks {
+  position: relative;
+  width: 100%;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: -4.5px;
+    border: 5px solid transparent;
+  }
+
+  &::before {
+    left: 0;
+    border-left-color: var(--border);
+  }
+  &::after {
+    right: 0;
+    border-right-color: var(--border);
+  }
+}
+
+/* Responsive Profile Spacing Tweaks for Viewports below 350px */
+@media (max-width: 350px) {
+  .profile-header-card {
+    padding: 12px 8px !important;
+  }
+  .profile-header-card h2,
+  .profile-header-card p span {
+    max-width: 150px !important;
+  }
+  
+  .profile-edit-card {
+    padding: 10px 6px !important;
+  }
+  
+  .profile-password-card {
+    padding: 8px 6px !important;
+  }
+  
+  .profile-edit-input {
+    padding-left: 28px !important;
+    padding-right: 28px !important; /* leaves space for eye button if password input */
+    font-size: 11px !important;
+  }
+  
+  .profile-edit-icon {
+    left: 8px !important;
+    width: 14px !important;
+    height: 14px !important;
+  }
+  
+  .profile-edit-eye {
+    right: 8px !important;
+    top: 9px !important;
+  }
+  .profile-edit-eye svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+  
+  /* Make sure the main layout wrapper has minimal margin/padding below 350px */
+  .max-w-6xl {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+  
+  /* Stack tabs vertically below 350px as 200px width is too narrow for side-by-side */
+  .profile-tabs-container {
+    flex-direction: column !important;
+    gap: 4px !important;
+    padding: 8px !important;
+  }
+  .profile-tabs-container button {
+    width: 100% !important;
+    padding: 8px 10px !important;
+    font-size: 12px !important;
+    border-bottom-width: 0px !important;
+    border-left-width: 4px !important;
+  }
+  .profile-tabs-container button[class*="bg-indigo-50"] {
+    border-left-color: #059669 !important;
+  }
+  
+  /* Donation Card spacing optimizations */
+  .profile-donation-card {
+    padding: 10px 8px !important;
+  }
+  
+  /* Stack donation items inside the right segment to prevent horizontal cutoff */
+  .profile-donation-details {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+  }
+  .profile-donation-details > div {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+  
+  /* Stack Support Overview titles vertically on smartwatch screens */
+  .profile-overview-title {
+    margin-bottom: 2px !important;
+    font-size: 16px !important;
+  }
+  .profile-overview-count {
+    font-size: 9px !important;
+    letter-spacing: 0.5px !important;
+  }
+  .profile-overview-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  
+  /* Shift and scale down floating scroll-to-top button so it doesn't overlap text */
+  .fixed.bottom-6.right-6 {
+    bottom: 8px !important;
+    right: 8px !important;
+    padding: 6px !important;
+  }
+  .fixed.bottom-6.right-6 svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+  
+  /* Stats Cards layout side-by-side row items to save vertical space on mobile */
+  .profile-stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+  .profile-stats-grid > div {
+    padding: 10px 12px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    text-align: left !important;
+    border-radius: 14px !important;
+  }
+  .profile-stats-grid > div > span:first-child {
+    font-size: 10px !important;
+    margin-bottom: 0 !important;
+  }
+  .profile-stats-grid > div > span:last-child {
+    font-size: 13px !important;
+    margin-top: 0 !important;
+  }
+}
+
+@media (max-width: 250px) {
+  /* At 200px, title and count should align cleanly */
+  .profile-overview-title {
+    font-size: 14px !important;
+  }
+  .profile-overview-count {
+    font-size: 8px !important;
+  }
+}
+
+/* Checkout Flow Stepper Label Layout Constraints */
+.stepper-label {
+  max-width: 65px;
+}
+@media (min-width: 350px) {
+  .stepper-label {
+    max-width: 100px;
+  }
+}
+@media (min-width: 640px) {
+  .stepper-label {
+    max-width: none !important;
+    white-space: nowrap !important;
+  }
+}
+
+
