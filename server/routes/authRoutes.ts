@@ -25,8 +25,11 @@ router.post('/register', async (req: express.Request, res: Response): Promise<an
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    // Check if user already exists
-    const userExists = await User.findOne({ email: normalizedEmail });
+    // Check if user already exists case-insensitively to prevent duplicates safely
+    const escapedEmail = normalizedEmail.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+    const userExists = await User.findOne({
+      email: { $regex: new RegExp(`^${escapedEmail}$`, 'i') }
+    });
     if (userExists) {
       return res.status(400).json({ message: 'User already exists with this email' });
     }
@@ -55,8 +58,8 @@ router.post('/register', async (req: express.Request, res: Response): Promise<an
       return res.status(400).json({ message: 'Invalid user data' });
     }
   } catch (error: any) {
-    // Handle MongoDB duplicate key error code 11000
-    if (error.code === 11000) {
+    // Handle MongoDB duplicate key error code 11000 and different variations
+    if (error.code === 11000 || error.message?.includes('E11000') || error.message?.includes('duplicate key')) {
       return res.status(400).json({ message: 'User already exists with this email' });
     }
     return res.status(500).json({ message: 'Server error', error: error.message });
