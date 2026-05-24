@@ -24,7 +24,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Intercept and handle preflight OPTIONS requests across all paths immediately
 app.use(express.json());
 
 // Modular API Routes
