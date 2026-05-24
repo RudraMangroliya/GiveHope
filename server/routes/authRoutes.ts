@@ -9,7 +9,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_for_development';
 
 // Helper to generate JWT
 const generateToken = (id: string, role: string): string => {
-  return jwt.sign({ id, role }, JWT_SECRET, { expiresIn: '30d' });
+  return jwt.sign({ id, role }, JWT_SECRET, { expiresIn: '2d' });
 };
 
 // @route   POST /api/auth/register
