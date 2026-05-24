@@ -16,7 +16,11 @@ connectDB();
 
 // Configure robust, explicit CORS settings to support local and production frontend requests dynamically
 const corsOptions = {
-  origin: true, // Dynamically reflects request origin in the Access-Control-Allow-Origin header
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Dynamically reflect the incoming request's origin back in the Access-Control-Allow-Origin header
+    // This allows localhost, production URLs, and any testing origin seamlessly
+    callback(null, true);
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
