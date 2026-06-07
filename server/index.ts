@@ -1,15 +1,20 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
 import { connectDB } from './config/db';
 import campaignRoutes from './routes/campaignRoutes';
 import donationRoutes from './routes/donationRoutes';
 import authRoutes from './routes/authRoutes';
+import { apiLimiter, authLimiter } from './middleware/rateLimiter';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Apply Helmet to secure HTTP headers
+app.use(helmet());
 
 // Connect to MongoDB Database
 connectDB();
@@ -30,10 +35,10 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Modular API Routes
-app.use('/api/campaigns', campaignRoutes);
-app.use('/api/donations', donationRoutes);
-app.use('/api/auth', authRoutes);
+// Modular API Routes with rate limiting protection
+app.use('/api/campaigns', apiLimiter, campaignRoutes);
+app.use('/api/donations', apiLimiter, donationRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 
 // Premium Root operational status endpoint
 app.get('/', (req, res) => {
