@@ -41,7 +41,6 @@ export const generate80GReceipt = (donation: ReceiptDonationData, campaignTitle:
   });
 
   const pageWidth = doc.internal.pageSize.getWidth(); // 210mm
-  const pageHeight = doc.internal.pageSize.getHeight(); // 297mm
   const margin = 15;
   const contentWidth = pageWidth - margin * 2; // 180mm
 
