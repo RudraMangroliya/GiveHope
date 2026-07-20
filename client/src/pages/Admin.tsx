@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Edit2, Trash2, Check, Clock, Shield, AlertCircle, 
-  TrendingUp, Heart, Award, RefreshCw, X, Image as ImageIcon
+  TrendingUp, Heart, Award, RefreshCw, X, Image as ImageIcon,
+  FolderKanban, HeartHandshake, Search, Download, Filter
 } from 'lucide-react';
 import axios from 'axios';
 import LoadingState from '../components/LoadingState';
 import { API_BASE_URL } from '../config';
+import { generate80GReceipt } from '../utils/generateReceipt';
 
 interface Campaign {
   _id: string;
@@ -46,6 +48,27 @@ export default function Admin() {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Search & Filter States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'verified' | 'approved' | 'completed'>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'money' | 'item'>('all');
+
+  // Filtered Donations computation
+  const filteredDonations = donations.filter(d => {
+    const query = searchQuery.toLowerCase().trim();
+    const matchesQuery = !query || 
+      d.donorName.toLowerCase().includes(query) ||
+      d.email.toLowerCase().includes(query) ||
+      (d.campaignId && d.campaignId.title.toLowerCase().includes(query));
+    
+    const matchesStatus = statusFilter === 'all' || d.status === statusFilter;
+    const matchesType = typeFilter === 'all' || 
+      (typeFilter === 'money' && d.donationType !== 'item') ||
+      (typeFilter === 'item' && d.donationType === 'item');
+
+    return matchesQuery && matchesStatus && matchesType;
+  });
   
   // Campaign Form Modal States
   const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
@@ -316,27 +339,31 @@ export default function Admin() {
 
       </div>
 
-      {/* Tabs Layout Switcher */}
-      <div className="border-b border-slate-100 flex flex-col min-[340px]:flex-row items-stretch min-[340px]:items-center gap-1 min-[340px]:gap-4 mb-6 sm:mb-8">
+      {/* Premium Segmented Control Tab Buttons */}
+      <div className="bg-slate-100/90 p-2 sm:p-2.5 rounded-2xl flex flex-col min-[680px]:flex-row items-stretch min-[680px]:items-center gap-2 border border-slate-200/80 shadow-inner mb-6 sm:mb-8 w-full min-[680px]:w-fit">
         <button
+          type="button"
           onClick={() => setActiveTab('campaigns')}
-          className={`py-2 min-[340px]:py-3 font-bold text-xs min-[280px]:text-sm sm:text-base border-b-2 text-center transition-all duration-300 ${
+          className={`w-full min-[680px]:w-auto flex items-center justify-center gap-2.5 px-4 sm:px-6 py-3 min-[680px]:py-2.5 rounded-xl text-xs min-[280px]:text-sm sm:text-base transition-all duration-300 cursor-pointer ${
             activeTab === 'campaigns'
-              ? 'border-indigo-600 text-indigo-600'
-              : 'border-transparent text-slate-500 hover:text-slate-700'
+              ? 'bg-white text-emerald-700 shadow-md shadow-emerald-500/10 border border-emerald-300/80 font-extrabold scale-[1.01]'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 border border-transparent font-bold'
           }`}
         >
-          Manage Campaigns
+          <FolderKanban className={`h-4 w-4 sm:h-5 sm:w-5 ${activeTab === 'campaigns' ? 'text-emerald-600' : 'text-slate-400'}`} />
+          <span>Manage Campaigns</span>
         </button>
         <button
+          type="button"
           onClick={() => setActiveTab('donations')}
-          className={`py-2 min-[340px]:py-3 font-bold text-xs min-[280px]:text-sm sm:text-base border-b-2 text-center transition-all duration-300 ${
+          className={`w-full min-[680px]:w-auto flex items-center justify-center gap-2.5 px-4 sm:px-6 py-3 min-[680px]:py-2.5 rounded-xl text-xs min-[280px]:text-sm sm:text-base transition-all duration-300 cursor-pointer ${
             activeTab === 'donations'
-              ? 'border-indigo-600 text-indigo-600'
-              : 'border-transparent text-slate-500 hover:text-slate-700'
+              ? 'bg-white text-emerald-700 shadow-md shadow-emerald-500/10 border border-emerald-300/80 font-extrabold scale-[1.01]'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 border border-transparent font-bold'
           }`}
         >
-          Donations Status Tracker
+          <HeartHandshake className={`h-4 w-4 sm:h-5 sm:w-5 ${activeTab === 'donations' ? 'text-emerald-600' : 'text-slate-400'}`} />
+          <span>Donations Status Tracker</span>
         </button>
       </div>
 
@@ -419,77 +446,75 @@ export default function Admin() {
       {/* TAB CONTENT: DONATIONS */}
       {activeTab === 'donations' && (
         <div className="bg-white border border-slate-100 rounded-2xl min-[280px]:rounded-3xl shadow-sm overflow-hidden">
-          <div className="p-4 sm:p-6 border-b border-slate-100">
-            <h3 className="font-extrabold text-slate-900 text-base sm:text-lg">Donation Ledger</h3>
-          </div>
           
-          {/* Hybrid Layout: Mobile Cards vs Desktop Table */}
-          
-          {/* 1. Mobile Cards view (shown under sm: 640px viewport) */}
-          <div className="block sm:hidden divide-y divide-slate-100">
-            {donations.length === 0 ? (
-              <div className="py-10 text-center text-slate-400 font-semibold text-xs min-[280px]:text-sm">
-                No donations registered in giving records.
+          {/* Header & Ultra-Responsive Search/Filter Toolbar (down to 200px) */}
+          <div className="p-2.5 min-[280px]:p-4 sm:p-6 border-b border-slate-100 space-y-3 sm:space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="font-extrabold text-slate-900 text-sm min-[280px]:text-base sm:text-lg">
+                  Donation Ledger
+                </h3>
+                <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[9px] min-[280px]:text-[10px] sm:text-xs font-bold border border-slate-200/80 shrink-0">
+                  Live Status
+                </span>
               </div>
-            ) : (
-              donations.map((d) => (
-                <div key={d._id} className="p-3.5 min-[280px]:p-4 space-y-3">
-                  {/* Donor details block */}
-                  <div>
-                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Donor</span>
-                    <div className="font-bold text-slate-800 text-sm">{d.donorName}</div>
-                    <div className="text-[10px] min-[280px]:text-xs text-slate-400 font-semibold break-all">{d.email}</div>
-                    {d.message && (
-                      <div className="text-[10px] min-[280px]:text-xs italic text-slate-400 mt-1 pl-2 border-l-2 border-slate-150">
-                        "{d.message}"
-                      </div>
-                    )}
-                  </div>
+              <p className="text-[10px] min-[280px]:text-xs text-slate-400 font-semibold">Showing {filteredDonations.length} of {donations.length} total records</p>
+            </div>
 
-                  {/* Campaign details block */}
-                  <div>
-                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Campaign</span>
-                    <div className="font-bold text-slate-700 text-xs line-clamp-2">
-                      {d.campaignId ? d.campaignId.title : <span className="text-rose-500 font-bold italic">Deleted Campaign</span>}
-                    </div>
-                  </div>
+            {/* Controls Bar: Lightest Professional Slate Gray Container */}
+            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-2 min-[280px]:p-3 sm:p-3.5 shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-2 sm:gap-3">
+              {/* Search Box */}
+              <div className="relative w-full lg:flex-1 min-w-0">
+                <Search className="absolute left-3 top-2.5 sm:top-3 h-3.5 sm:h-4 w-3.5 sm:w-4 text-slate-500 font-bold" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search donor, email..."
+                  className="w-full pl-8 min-[280px]:pl-9 sm:pl-11 pr-8 py-1.5 sm:py-2 bg-white border border-slate-300/80 rounded-xl text-slate-800 placeholder-slate-400 text-[10px] min-[280px]:text-xs sm:text-sm focus:ring-2 focus:ring-slate-400/20 focus:border-slate-600 outline-none transition-all shadow-sm"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2.5 top-2 sm:top-2.5 text-slate-400 hover:text-slate-700 p-0.5"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
 
-                  {/* Amount & Status side-by-side flex */}
-                  <div className="flex justify-between items-center gap-2 pt-1">
-                    <div>
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Contribution</span>
-                      <div className="font-black text-slate-900 text-xs sm:text-sm">
-                        {d.donationType === 'item' ? (
-                          <span className="text-indigo-600 font-extrabold uppercase text-[10px] tracking-wide block">
-                            {d.quantity} {d.quantityUnit} ({d.itemCategory})
-                          </span>
-                        ) : (
-                          `₹${d.amount.toLocaleString()}`
-                        )}
-                      </div>
+              {/* Filter Controls Row - Responsive for 200px to 680px+ */}
+              <div className="flex flex-col min-[680px]:flex-row flex-wrap items-stretch min-[680px]:items-center gap-1.5 sm:gap-2 w-full lg:w-auto">
+                
+                {/* 1. Mobile & Small Screen Dual Dropdowns (shown under 680px viewport) */}
+                <div className="flex flex-col min-[480px]:flex-row min-[680px]:hidden items-stretch min-[480px]:items-center gap-1.5 w-full">
+                  {/* Type Filter Dropdown */}
+                  <div className="w-full min-[480px]:flex-1 flex items-center justify-between gap-2 bg-white border border-slate-300/80 rounded-xl px-3 py-2 shadow-sm min-w-0">
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <Filter className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                      <span className="text-xs font-bold text-slate-400">Type:</span>
                     </div>
-                    <div>
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5 text-right">Status</span>
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold border uppercase tracking-wider ${
-                        d.status === 'completed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                        d.status === 'approved' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
-                        d.status === 'verified' ? 'bg-cyan-50 text-cyan-600 border-cyan-100' :
-                        'bg-amber-50 text-amber-600 border-amber-100'
-                      }`}>
-                        <span>{d.status}</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Action Selector */}
-                  <div className="pt-2.5 border-t border-slate-100">
-                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Update Status Timeline</label>
                     <select
-                      value={d.status}
-                      disabled={updatingDonationIds.includes(d._id)}
-                      onChange={(e) => handleStatusChange(d._id, e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 text-slate-700 py-2 px-3 rounded-xl font-bold text-xs outline-none focus:border-indigo-500 focus:bg-white transition-all cursor-pointer disabled:opacity-60"
+                      value={typeFilter}
+                      onChange={(e) => setTypeFilter(e.target.value as any)}
+                      className="bg-transparent text-slate-800 font-extrabold text-xs outline-none cursor-pointer text-right w-full min-w-0"
                     >
+                      <option value="all">All Types</option>
+                      <option value="money">Monetary (₹)</option>
+                      <option value="item">Items</option>
+                    </select>
+                  </div>
+
+                  {/* Status Filter Dropdown */}
+                  <div className="w-full min-[480px]:flex-1 flex items-center justify-between gap-2 bg-white border border-slate-300/80 rounded-xl px-3 py-2 shadow-sm min-w-0">
+                    <span className="text-xs font-bold text-slate-400 shrink-0">Status:</span>
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value as any)}
+                      className="bg-transparent text-slate-800 font-extrabold text-xs outline-none cursor-pointer text-right capitalize w-full min-w-0"
+                    >
+                      <option value="all">All Statuses</option>
                       <option value="pending">Pending</option>
                       <option value="verified">Verified</option>
                       <option value="approved">Approved</option>
@@ -497,45 +522,178 @@ export default function Admin() {
                     </select>
                   </div>
                 </div>
+
+                {/* 2. Desktop/Tablet Filter Controls (shown from 680px viewport onwards) */}
+                <div className="hidden min-[680px]:flex items-center gap-2 w-full min-[680px]:w-auto">
+                  {/* Type Filter Dropdown */}
+                  <div className="flex items-center gap-1 bg-white border border-slate-300/80 rounded-xl px-2.5 py-1.5 shrink-0 shadow-sm">
+                    <Filter className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                    <select
+                      value={typeFilter}
+                      onChange={(e) => setTypeFilter(e.target.value as any)}
+                      className="bg-transparent text-slate-800 font-bold text-xs outline-none cursor-pointer"
+                    >
+                      <option value="all">All Types</option>
+                      <option value="money">Monetary (₹)</option>
+                      <option value="item">Items</option>
+                    </select>
+                  </div>
+
+                  {/* Status Filter Segmented Pills Container */}
+                  <div className="flex items-center gap-1 bg-slate-200/70 border border-slate-300/60 p-1 rounded-xl shrink-0 shadow-inner">
+                    {(['all', 'pending', 'verified', 'approved', 'completed'] as const).map((st) => (
+                      <button
+                        key={st}
+                        type="button"
+                        onClick={() => setStatusFilter(st)}
+                        className={`px-2 min-[720px]:px-2.5 py-1 rounded-lg text-xs font-bold capitalize transition-all whitespace-nowrap cursor-pointer shrink-0 ${
+                          statusFilter === st
+                            ? 'bg-slate-800 text-white shadow-sm font-extrabold scale-[1.02]'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                        }`}
+                      >
+                        {st}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+          
+          {/* Hybrid Layout: Responsive Cards (<1024px) vs Desktop Table (>=1024px) */}
+          
+          {/* 1. Mobile & Tablet Cards view (shown under lg: 1024px viewport) */}
+          <div className="block lg:hidden bg-slate-50/70 p-2 min-[280px]:p-3 sm:p-4 grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-4">
+            {filteredDonations.length === 0 ? (
+              <div className="py-10 text-center text-slate-400 font-semibold text-xs bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm md:col-span-2">
+                No matching donations found. Try resetting search/filters.
+              </div>
+            ) : (
+              filteredDonations.map((d) => (
+                <div 
+                  key={d._id} 
+                  className="bg-white rounded-2xl border border-slate-200/90 p-2.5 min-[280px]:p-3.5 sm:p-4 space-y-2.5 sm:space-y-3 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                >
+                  <div className="space-y-2.5 sm:space-y-3">
+                    {/* Header Row: Donor Info & Status Badge */}
+                    <div className="flex flex-wrap items-start justify-between gap-1.5 min-[320px]:gap-2">
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Donor</span>
+                        <div className="font-extrabold text-slate-900 text-xs min-[280px]:text-sm leading-tight truncate">{d.donorName}</div>
+                        <div className="text-[9px] min-[280px]:text-[10px] text-slate-400 font-semibold break-all mt-0.5 leading-tight">{d.email}</div>
+                      </div>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] min-[280px]:text-[9px] font-extrabold border uppercase tracking-wider shrink-0 ${
+                        d.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80' :
+                        d.status === 'approved' ? 'bg-indigo-50 text-indigo-700 border-indigo-200/80' :
+                        d.status === 'verified' ? 'bg-cyan-50 text-cyan-700 border-cyan-200/80' :
+                        'bg-amber-50 text-amber-700 border-amber-200/80'
+                      }`}>
+                        <span>{d.status}</span>
+                      </span>
+                    </div>
+
+                    {/* Campaign Supported */}
+                    <div className="bg-slate-50/80 rounded-xl p-2 min-[280px]:p-2.5 border border-slate-200/60 space-y-1">
+                      <div>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Campaign Supported</span>
+                        <div className="font-bold text-slate-800 text-[10px] min-[280px]:text-xs line-clamp-2">
+                          {d.campaignId ? d.campaignId.title : <span className="text-rose-500 font-bold italic">Deleted Campaign</span>}
+                        </div>
+                      </div>
+
+                      {d.message && (
+                        <div className="text-[9px] min-[280px]:text-[10px] italic text-slate-500 pt-1 border-t border-slate-200/60">
+                          💬 "{d.message}"
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Contribution Value Badge */}
+                    <div className="flex items-center justify-between pt-0.5">
+                      <span className="text-[9px] min-[280px]:text-[10px] font-bold text-slate-400 uppercase tracking-wider">Contribution</span>
+                      <div className="font-black text-slate-900 text-xs sm:text-sm">
+                        {d.donationType === 'item' ? (
+                          <span className="text-indigo-600 font-extrabold text-[10px] min-[280px]:text-xs bg-indigo-50 px-2 py-0.5 min-[280px]:px-2.5 min-[280px]:py-1 rounded-lg border border-indigo-100">
+                            {d.quantity} {d.quantityUnit} ({d.itemCategory})
+                          </span>
+                        ) : (
+                          <span className="text-emerald-700 font-black text-xs sm:text-sm bg-emerald-50 px-2 py-0.5 min-[280px]:px-2.5 min-[280px]:py-1 rounded-lg border border-emerald-100">
+                            ₹{d.amount.toLocaleString('en-IN')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Selector & PDF Receipt Footer */}
+                  <div className="pt-2 border-t border-slate-100 flex flex-col gap-1.5 mt-1">
+                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Update Status & Receipt</label>
+                    <div className="flex flex-col min-[350px]:flex-row items-stretch min-[350px]:items-center gap-1.5 min-[350px]:gap-2">
+                      <select
+                        value={d.status}
+                        disabled={updatingDonationIds.includes(d._id)}
+                        onChange={(e) => handleStatusChange(d._id, e.target.value)}
+                        className="w-full min-[350px]:flex-1 bg-slate-50 border border-slate-200 text-slate-800 py-1.5 px-2 rounded-xl font-bold text-[10px] min-[280px]:text-xs outline-none focus:border-indigo-500 focus:bg-white transition-all cursor-pointer disabled:opacity-60 shadow-sm"
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="verified">Verified</option>
+                        <option value="approved">Approved</option>
+                        <option value="completed">Completed</option>
+                      </select>
+
+                      <button
+                        type="button"
+                        onClick={() => generate80GReceipt(d, d.campaignId ? d.campaignId.title : 'GiveHope Cause')}
+                        className="w-full min-[350px]:w-auto py-1.5 px-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 font-bold text-[10px] min-[280px]:text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 shadow-sm"
+                        title="Download 80G PDF Receipt"
+                      >
+                        <Download className="h-3 w-3 min-[280px]:h-3.5 min-[280px]:w-3.5" />
+                        <span>80G Receipt</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               ))
             )}
           </div>
 
-          {/* 2. Desktop Table view (shown from sm: 640px viewport onwards) */}
-          <div className="hidden sm:block overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+          {/* 2. Desktop Table view (shown from lg: 1024px viewport onwards) */}
+          <div className="hidden lg:block overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[900px]">
               <thead>
                 <tr className="bg-slate-50 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-100">
-                  <th className="py-4 px-6">Donor Details</th>
-                  <th className="py-4 px-6">Campaign</th>
-                  <th className="py-4 px-6">Amount</th>
-                  <th className="py-4 px-6">Status Badge</th>
-                  <th className="py-4 px-6 text-center">Manage Timeline</th>
+                  <th className="py-4 px-5">Donor Details</th>
+                  <th className="py-4 px-5">Campaign</th>
+                  <th className="py-4 px-5">Amount</th>
+                  <th className="py-4 px-5">Status Badge</th>
+                  <th className="py-4 px-5 text-center">Manage & Receipt</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm">
-                {donations.length === 0 ? (
+                {filteredDonations.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="py-10 text-center text-slate-400 font-semibold">
-                      No donations registered in giving records.
+                      No matching donations found in giving records. Try clearing search or status filters.
                     </td>
                   </tr>
                 ) : (
-                  donations.map((d) => (
+                  filteredDonations.map((d) => (
                     <tr key={d._id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="py-4 px-6 min-w-[200px]">
+                      <td className="py-4 px-5 min-w-[200px]">
                         <div className="font-bold text-slate-800">{d.donorName}</div>
                         <div className="text-xs text-slate-400 font-semibold">{d.email}</div>
                         {d.message && (
-                          <div className="text-xs italic text-slate-400 mt-1 max-w-[250px] truncate" title={d.message}>
+                          <div className="text-xs italic text-slate-400 mt-1 max-w-[240px] truncate" title={d.message}>
                             "{d.message}"
                           </div>
                         )}
                       </td>
-                      <td className="py-4 px-6 font-semibold text-slate-700 min-w-[180px]">
+                      <td className="py-4 px-5 font-semibold text-slate-700 min-w-[180px]">
                         {d.campaignId ? d.campaignId.title : <span className="text-rose-500 font-bold italic">Deleted Campaign</span>}
                       </td>
-                      <td className="py-4 px-6 font-extrabold text-slate-900">
+                      <td className="py-4 px-5 font-extrabold text-slate-900 whitespace-nowrap">
                         {d.donationType === 'item' ? (
                           <div className="flex flex-col">
                             <span className="text-indigo-600 font-extrabold uppercase text-[11px] tracking-wider leading-none mb-1">
@@ -546,10 +704,10 @@ export default function Admin() {
                             </span>
                           </div>
                         ) : (
-                          `₹${d.amount.toLocaleString()}`
+                          `₹${d.amount.toLocaleString('en-IN')}`
                         )}
                       </td>
-                      <td className="py-4 px-6">
+                      <td className="py-4 px-5 whitespace-nowrap">
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border uppercase tracking-wider ${
                           d.status === 'completed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
                           d.status === 'approved' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
@@ -561,8 +719,8 @@ export default function Admin() {
                           <span>{d.status}</span>
                         </span>
                       </td>
-                      <td className="py-4 px-6 text-center min-w-[220px]">
-                        <div className="flex items-center justify-center gap-1.5">
+                      <td className="py-4 px-5 text-center min-w-[240px]">
+                        <div className="flex items-center justify-center gap-2">
                           <select
                             value={d.status}
                             disabled={updatingDonationIds.includes(d._id)}
@@ -574,6 +732,16 @@ export default function Admin() {
                             <option value="approved">Approved</option>
                             <option value="completed">Completed</option>
                           </select>
+
+                          <button
+                            type="button"
+                            onClick={() => generate80GReceipt(d, d.campaignId ? d.campaignId.title : 'GiveHope Cause')}
+                            className="p-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0"
+                            title="Download 80G Tax Exemption PDF Receipt"
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                            <span>80G Receipt</span>
+                          </button>
                         </div>
                       </td>
                     </tr>

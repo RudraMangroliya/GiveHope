@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, CreditCard, Coins, User, ArrowLeft } from 'lucide-react';
+import { Check, CreditCard, Coins, User, ArrowLeft, X, AlertCircle, Download } from 'lucide-react';
 import axios from 'axios';
 import LoadingState from '../components/LoadingState';
 import { API_BASE_URL } from '../config';
+import { generate80GReceipt, type ReceiptDonationData } from '../utils/generateReceipt';
 
 interface Campaign {
   _id: string;
@@ -51,6 +52,7 @@ const DonationFlow = () => {
     cvc: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createdDonation, setCreatedDonation] = useState<ReceiptDonationData | null>(null);
 
   // Pre-fill user details if logged in
   useEffect(() => {
@@ -140,7 +142,7 @@ const DonationFlow = () => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      await axios.post(`${API_BASE_URL}/donations`, {
+      const res = await axios.post(`${API_BASE_URL}/donations`, {
         campaignId,
         amount: formData.donationType === 'item' ? 0 : (formData.amount || Number(formData.customAmount)),
         donorName: formData.donorName,
@@ -155,6 +157,9 @@ const DonationFlow = () => {
         pickupPhone: formData.donationType === 'item' ? formData.pickupPhone : undefined,
         pickupTime: formData.donationType === 'item' && formData.pickupType === 'pickup' ? formData.pickupTime : undefined,
       });
+      if (res.data && res.data.donation) {
+        setCreatedDonation(res.data.donation);
+      }
       setCurrentStep(4);
     } catch (error) {
       console.error('Donation failed', error);
@@ -164,9 +169,13 @@ const DonationFlow = () => {
     }
   };
 
-  // Step validation rules
+  // Step validation rules & remaining target calculation
+  const remainingNeeded = campaign ? Math.max(0, campaign.goal - campaign.raised) : 0;
+  const selectedAmount = formData.donationType === 'money' ? (formData.amount || Number(formData.customAmount) || 0) : 0;
+  const exceedsRemaining = remainingNeeded > 0 && selectedAmount > remainingNeeded;
+
   const isStep1Disabled = formData.donationType === 'money'
-    ? (!formData.amount && (!formData.customAmount || Number(formData.customAmount) <= 0))
+    ? (selectedAmount < 1)
     : (!formData.quantity || Number(formData.quantity) <= 0);
 
   const isStep3Disabled = formData.donationType === 'money'
@@ -216,7 +225,7 @@ const DonationFlow = () => {
             {formData.donationType === 'money' ? (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-                  {[25, 50, 100, 250].map((amount) => (
+                  {[1, 50, 100, 250].map((amount) => (
                     <motion.button
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
@@ -233,10 +242,13 @@ const DonationFlow = () => {
                   ))}
                 </div>
                 <div className="mt-4 sm:mt-6">
-                  <label htmlFor="donor-custom-amount" className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">Or enter custom amount</label>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label htmlFor="donor-custom-amount" className="block text-xs sm:text-sm font-semibold text-gray-700">Or enter custom amount</label>
+                    <span className="text-[11px] font-bold text-slate-400">Min. ₹1</span>
+                  </div>
                   <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none transition-colors group-focus-within:text-indigo-600">
-                      <span className="text-gray-500 text-xs sm:text-sm group-focus-within:text-indigo-600">₹</span>
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none transition-colors z-10">
+                      <span className="text-gray-500 group-focus-within:text-indigo-600 font-extrabold text-sm sm:text-base transition-colors">₹</span>
                     </div>
                     <input
                       type="number"
@@ -249,10 +261,24 @@ const DonationFlow = () => {
                           setFormData({ ...formData, customAmount: e.target.value, amount: 0 });
                         }
                       }}
-                      className="pl-7 block w-full rounded-xl border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-xs min-[320px]:text-sm sm:text-lg py-2 sm:py-3 border px-2.5 sm:px-4 transition-shadow focus:shadow-md"
-                      placeholder="Other amount"
+                      className="!pl-10 pr-4 block w-full rounded-xl border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 text-sm sm:text-lg py-2.5 sm:py-3 border transition-all text-slate-800 font-bold placeholder:text-gray-400 placeholder:font-normal"
+                      placeholder="Enter amount"
                     />
                   </div>
+
+                  {/* Warning Message when donation exceeds remaining needed amount */}
+                  {exceedsRemaining && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-3 p-3 bg-amber-50 border border-amber-200/80 rounded-xl text-amber-900 text-xs sm:text-sm font-semibold flex items-center gap-2.5 shadow-sm"
+                    >
+                      <AlertCircle className="w-4.5 h-4.5 text-amber-600 shrink-0" />
+                      <span>
+                        Note: Your pledge of <strong>₹{selectedAmount.toLocaleString()}</strong> exceeds the remaining target of <strong>₹{remainingNeeded.toLocaleString()}</strong>. Extra funds will support extended relief!
+                      </span>
+                    </motion.div>
+                  )}
                 </div>
               </>
             ) : (
@@ -634,14 +660,40 @@ const DonationFlow = () => {
               )}{' '}
               Thank you for supporting <strong>{campaign?.title || 'our cause'}</strong>. Together, we are making a difference.
             </p>
-            <div className="pt-6 sm:pt-8 px-4 flex flex-col sm:flex-row justify-center gap-3">
+            <div className="pt-6 sm:pt-8 px-4 flex flex-col sm:flex-row justify-center items-center gap-3 flex-wrap">
               <button
+                type="button"
+                onClick={() => {
+                  generate80GReceipt(
+                    createdDonation || {
+                      _id: 'REC' + Math.floor(Math.random() * 1000000),
+                      donorName: formData.donorName,
+                      email: formData.email,
+                      amount: Number(formData.amount || formData.customAmount || 0),
+                      donationType: formData.donationType,
+                      itemCategory: formData.itemCategory,
+                      quantity: Number(formData.quantity),
+                      quantityUnit: formData.quantityUnit,
+                      date: new Date()
+                    },
+                    campaign?.title || 'GiveHope Cause'
+                  );
+                }}
+                className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-bold shadow-md shadow-emerald-100 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer text-sm sm:text-base"
+              >
+                <Download className="w-4.5 h-4.5" />
+                <span>Download 80G Receipt (PDF)</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => navigate('/profile')}
                 className="w-full sm:w-auto bg-indigo-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-bold shadow-md hover:bg-indigo-700 transition-colors text-sm sm:text-base cursor-pointer"
               >
                 Track Donation Status
               </button>
               <button
+                type="button"
                 onClick={() => navigate('/')}
                 className="w-full sm:w-auto bg-white text-slate-600 border border-slate-200 px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-bold shadow-sm hover:bg-slate-50 transition-colors text-sm sm:text-base cursor-pointer"
               >
@@ -661,33 +713,71 @@ const DonationFlow = () => {
  
   return (
     <div className="max-w-3xl mx-auto py-4 sm:py-8 px-2 sm:px-4">
-      {/* Back Button */}
-      <div className="mb-4 sm:mb-6 mt-1 flex justify-start">
-        <button
-          onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 font-bold text-xs sm:text-sm transition-colors duration-300 group cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-          <span>Back to Campaigns</span>
-        </button>
+      {/* Premium Top Navigation Toolbar */}
+      <div className="mb-6 sm:mb-8 mt-1 flex items-center justify-between gap-3">
+        {currentStep > 1 && currentStep < 4 ? (
+          <button
+            type="button"
+            onClick={handleBack}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200/80 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 font-extrabold text-xs sm:text-sm shadow-sm transition-all duration-300 group cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            <span>Back to Step {currentStep - 1}</span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200/80 text-slate-700 hover:text-indigo-600 hover:bg-slate-50 font-extrabold text-xs sm:text-sm shadow-sm transition-all duration-300 group cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            <span>Back to Campaigns</span>
+          </button>
+        )}
+
+        {currentStep < 4 && (
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200/80 text-slate-600 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 font-bold text-xs sm:text-sm shadow-sm transition-all duration-300 cursor-pointer"
+          >
+            <span>Exit Flow</span>
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
 
-      {/* Timeline UI */}
-      <div className="max-w-[280px] min-[360px]:max-w-[320px] min-[480px]:max-w-[380px] sm:max-w-[440px] md:max-w-[480px] mx-auto mb-12 sm:mb-16 mt-2 px-1">
-        <div className="flex items-center justify-between relative">
-          <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-0.5 sm:h-1 bg-gray-200 rounded-full -z-10"></div>
-          <div 
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 h-0.5 sm:h-1 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full -z-10 transition-all duration-500 ease-in-out"
-            style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
-          ></div>
-          
+      {/* Step Progress Timeline Bar */}
+      <div className="max-w-[280px] min-[360px]:max-w-[320px] min-[480px]:max-w-[380px] sm:max-w-[440px] md:max-w-[480px] mx-auto mb-12 sm:mb-16 mt-2 px-1 relative">
+        {/* Background Line Track */}
+        <div className="absolute left-[18px] sm:left-[24px] right-[18px] sm:right-[24px] top-[18px] sm:top-[24px] -translate-y-1/2 h-1 bg-slate-200 rounded-full z-0" />
+        
+        {/* Animated Active Step Filled Progress Line */}
+        <div 
+          className="absolute left-[18px] sm:left-[24px] top-[18px] sm:top-[24px] -translate-y-1/2 h-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full z-0 transition-all duration-500 ease-in-out"
+          style={{ 
+            width: `calc(${((currentStep - 1) / (steps.length - 1)) * 100}% - ${currentStep === 1 ? 0 : 4}px)`
+          }}
+        />
+
+        <div className="flex items-center justify-between relative z-10">
           {steps.map((step) => {
             const Icon = step.icon;
             const isActive = step.id <= currentStep;
             const isCurrent = step.id === currentStep;
+            const canJumpBack = step.id < currentStep && currentStep < 4;
             
             return (
-              <div key={step.id} className="flex flex-col items-center relative z-10">
+              <div 
+                key={step.id} 
+                className={`flex flex-col items-center relative z-10 ${canJumpBack ? 'cursor-pointer group' : ''}`}
+                onClick={() => {
+                  if (canJumpBack) {
+                    setCurrentStep(step.id);
+                  }
+                }}
+                title={canJumpBack ? `Jump back to Step ${step.id}: ${step.name}` : undefined}
+              >
                 <motion.div
                   initial={false}
                   animate={{
@@ -697,16 +787,16 @@ const DonationFlow = () => {
                   }}
                   className={`w-9 h-9 sm:w-12 sm:h-12 rounded-full border-2 sm:border-4 flex items-center justify-center transition-colors duration-300 ${
                     isActive 
-                      ? 'text-white border-indigo-600 shadow-lg shadow-indigo-100' 
+                      ? 'text-white border-emerald-600 shadow-lg shadow-emerald-100' 
                       : 'text-gray-400 border-gray-200 bg-white'
-                  }`}
+                  } ${canJumpBack ? 'group-hover:scale-110' : ''}`}
                 >
                   <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                 </motion.div>
                 <span className={`stepper-label absolute top-full mt-2 sm:mt-3 left-1/2 -translate-x-1/2 text-[9px] min-[360px]:text-[10px] sm:text-xs md:text-sm font-bold tracking-tight text-center leading-tight transition-colors duration-300 ${
                   isCurrent ? 'block' : 'hidden sm:block'
                 } ${
-                  isActive ? 'text-indigo-600 font-extrabold' : 'text-slate-400 font-medium'
+                  isActive ? 'text-emerald-600 font-extrabold' : 'text-slate-400 font-medium'
                 }`}>
                   {step.name}
                 </span>
@@ -718,15 +808,25 @@ const DonationFlow = () => {
  
       <motion.div layout className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-2.5 min-[300px]:p-3.5 sm:p-8 md:p-12 overflow-hidden min-h-[300px] sm:min-h-[400px]">
         {campaign && currentStep < 4 && (
-          <div className="flex items-center gap-3.5 p-3 sm:p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100/50 mb-6 shrink-0">
-            <img 
-              src={campaign.image} 
-              alt={campaign.title} 
-              className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover shrink-0 shadow-sm border border-white"
-            />
-            <div className="min-w-0">
-              <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider block mb-0.5 sm:mb-1">You are supporting</span>
-              <h4 className="text-sm sm:text-base font-extrabold text-slate-900 truncate leading-snug">{campaign.title}</h4>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100/60 mb-6 shrink-0">
+            <div className="flex items-center gap-3.5 min-w-0">
+              <img 
+                src={campaign.image} 
+                alt={campaign.title} 
+                className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover shrink-0 shadow-sm border border-white"
+              />
+              <div className="min-w-0">
+                <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider block mb-0.5 sm:mb-1">You are supporting</span>
+                <h4 className="text-sm sm:text-base font-extrabold text-slate-900 truncate leading-snug">{campaign.title}</h4>
+              </div>
+            </div>
+
+            {/* Campaign Remaining Needed Pill Badge */}
+            <div className="flex items-center justify-between sm:justify-start gap-2 bg-white/90 px-3.5 py-2 rounded-xl border border-emerald-100/80 shadow-sm shrink-0">
+              <span className="text-[11px] font-bold text-slate-500">Remaining Needed:</span>
+              <span className="text-xs sm:text-sm font-black text-emerald-600">
+                ₹{remainingNeeded.toLocaleString()}
+              </span>
             </div>
           </div>
         )}

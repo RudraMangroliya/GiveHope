@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { 
   User, Mail, Key, Heart, 
   Eye, EyeOff, CheckCircle2, Circle, AlertCircle,
-  Gift, Award
+  Gift, Award, Download
 } from 'lucide-react';
 import axios from 'axios';
 import LoadingState from '../components/LoadingState';
 import { API_BASE_URL } from '../config';
+import { generate80GReceipt } from '../utils/generateReceipt';
 
 interface ProfileProps {
   user: {
@@ -382,7 +383,7 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                                 )}
                               </div>
 
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2">
                                 {/* Status Indicator */}
                                 <span className={`px-3 py-1 text-[10px] sm:text-xs font-extrabold rounded-full border shadow-sm ${
                                   donation.status === 'completed'
@@ -395,6 +396,16 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                                 }`}>
                                   {donation.status.charAt(0).toUpperCase() + donation.status.slice(1)}
                                 </span>
+
+                                <button
+                                  type="button"
+                                  onClick={() => generate80GReceipt(donation, donation.campaignId?.title || 'GiveHope Cause')}
+                                  className="p-1.5 rounded-xl border border-emerald-200/80 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-extrabold text-xs px-2.5 flex items-center gap-1 transition-all duration-300 cursor-pointer shrink-0 shadow-sm"
+                                  title="Download Official 80G Tax Exemption PDF Receipt"
+                                >
+                                  <Download className="h-3.5 w-3.5" />
+                                  <span className="hidden min-[400px]:inline">Receipt</span>
+                                </button>
 
                                 <button
                                   onClick={() => toggleExpandDonation(donation._id)}
