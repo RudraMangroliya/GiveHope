@@ -44,6 +44,7 @@ router.post('/register', async (req: express.Request, res: Response): Promise<an
       email: normalizedEmail,
       password: hashedPassword,
       role: role || 'user',
+      isAnonymous: false,
     });
 
     if (user) {
@@ -52,6 +53,7 @@ router.post('/register', async (req: express.Request, res: Response): Promise<an
         name: user.name,
         email: user.email,
         role: user.role,
+        isAnonymous: user.isAnonymous,
         token: generateToken(user._id.toString(), user.role),
       });
     } else {
@@ -96,6 +98,7 @@ router.post('/login', async (req: express.Request, res: Response): Promise<any> 
       name: user.name,
       email: user.email,
       role: user.role,
+      isAnonymous: user.isAnonymous,
       token: generateToken(user._id.toString(), user.role),
     });
   } catch (error: any) {
@@ -137,9 +140,10 @@ router.put('/profile', protect, async (req: AuthRequest, res: Response): Promise
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const { name, email, password } = req.body;
+    const { name, email, password, isAnonymous } = req.body;
 
     if (name) user.name = name;
+    if (isAnonymous !== undefined) user.isAnonymous = isAnonymous;
     
     if (email && email.toLowerCase().trim() !== user.email) {
       const emailExists = await User.findOne({ email: email.toLowerCase().trim() });
@@ -161,6 +165,7 @@ router.put('/profile', protect, async (req: AuthRequest, res: Response): Promise
       name: user.name,
       email: user.email,
       role: user.role,
+      isAnonymous: user.isAnonymous,
       createdAt: user.createdAt,
     });
   } catch (error: any) {

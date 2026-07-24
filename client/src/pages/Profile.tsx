@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   User, Mail, Key, Heart, 
   Eye, EyeOff, CheckCircle2, Circle, AlertCircle,
-  Gift, Award, Download
+  Gift, Award, Download, Sparkles, HeartHandshake, Trophy
 } from 'lucide-react';
 import axios from 'axios';
 import LoadingState from '../components/LoadingState';
@@ -16,6 +16,7 @@ interface ProfileProps {
     name: string;
     email: string;
     role: 'user' | 'admin';
+    isAnonymous?: boolean;
     createdAt?: string;
   } | null;
   onProfileUpdate: (updatedUser: any) => void;
@@ -42,6 +43,15 @@ interface Donation {
   pickupAddress?: string;
   pickupPhone?: string;
   pickupTime?: string;
+  recurringType?: 'once' | 'monthly' | 'quarterly';
+  isActiveSubscription?: boolean;
+  courierName?: string;
+  courierPhone?: string;
+  trackingTimeline?: Array<{
+    status: string;
+    note: string;
+    timestamp: string;
+  }>;
 }
 
 export default function Profile({ user, onProfileUpdate }: ProfileProps) {
@@ -66,7 +76,8 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
     name: user.name,
     email: user.email,
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    isAnonymous: user.isAnonymous || false
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -135,7 +146,8 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
       const res = await axios.put(`${API_BASE_URL}/auth/profile`, {
         name: editForm.name,
         email: editForm.email,
-        password: editForm.password || undefined
+        password: editForm.password || undefined,
+        isAnonymous: editForm.isAnonymous
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -162,6 +174,79 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
     .reduce((sum, d) => sum + (d.quantity || 0), 0);
 
   const uniqueCausesCount = new Set(donations.map(d => d.campaignId?._id)).size;
+
+  const handleCancelRecurring = async (donationId: string) => {
+    if (!window.confirm('Are you sure you want to cancel this recurring pledge?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`${API_BASE_URL}/donations/${donationId}/cancel-recurring`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setDonations(prev => prev.map(d => d._id === donationId ? { ...d, isActiveSubscription: false } : d));
+      alert('Pledge subscription successfully cancelled.');
+    } catch (err: any) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Failed to cancel recurring pledge.');
+    }
+  };
+
+  const BADGE_CONFIGS: Record<string, {
+    name: string;
+    desc: string;
+    icon: React.ComponentType<any>;
+    color: string;
+  }> = {
+    'Hope Starter': {
+      name: 'Hope Starter',
+      desc: 'Granted for making a first donation.',
+      icon: Sparkles,
+      color: 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
+    },
+    'Angel Donor': {
+      name: 'Angel Donor',
+      desc: 'Granted for total financial contributions exceeding ₹1,000.',
+      icon: Heart,
+      color: 'bg-blue-50 text-blue-700 border-blue-200/80'
+    },
+    'Philanthropist': {
+      name: 'Philanthropist',
+      desc: 'Granted for total financial contributions exceeding ₹10,000.',
+      icon: Award,
+      color: 'bg-amber-50 text-amber-800 border-amber-250/70'
+    },
+    'Generous Hands': {
+      name: 'Generous Hands',
+      desc: 'Granted for physical item donations.',
+      icon: HeartHandshake,
+      color: 'bg-purple-50 text-purple-800 border-purple-200/80'
+    },
+    'Impact Champion': {
+      name: 'Impact Champion',
+      desc: 'Granted for supporting three or more distinct campaign causes.',
+      icon: Trophy,
+      color: 'bg-rose-50 text-rose-700 border-rose-200/80'
+    }
+  };
+
+  const getBadges = () => {
+    const earned: Array<{ name: string; desc: string; icon: React.ComponentType<any>; color: string }> = [];
+    if (totalMoneyDonated > 0) {
+      earned.push(BADGE_CONFIGS['Hope Starter']);
+    }
+    if (totalMoneyDonated >= 1000 && totalMoneyDonated < 10000) {
+      earned.push(BADGE_CONFIGS['Angel Donor']);
+    }
+    if (totalMoneyDonated >= 10000) {
+      earned.push(BADGE_CONFIGS['Philanthropist']);
+    }
+    if (totalItemsDonated > 0) {
+      earned.push(BADGE_CONFIGS['Generous Hands']);
+    }
+    if (uniqueCausesCount >= 3) {
+      earned.push(BADGE_CONFIGS['Impact Champion']);
+    }
+    return earned;
+  };
 
   const toggleExpandDonation = (id: string) => {
     setExpandedDonationId(prev => (prev === id ? null : id));
@@ -204,10 +289,10 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
   return (
     <div className="max-w-6xl mx-auto py-2 sm:py-6 px-1 min-[285px]:px-2.5 sm:px-4 space-y-6 sm:space-y-8">
       {/* Profile Header Segment */}
-      <div className="relative overflow-hidden rounded-3xl bg-white/70 backdrop-blur-xl border border-slate-100 p-3 min-[285px]:p-6 sm:p-8 shadow-xl shadow-slate-100/50 flex flex-col md:flex-row justify-between items-center gap-6 profile-header-card">
+      <div className="relative overflow-hidden rounded-3xl bg-white/70 backdrop-blur-xl border border-slate-100 p-3 min-[285px]:p-6 sm:p-8 shadow-xl shadow-slate-100/50 flex flex-col lg:flex-row justify-between items-center gap-6 profile-header-card">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-tr from-indigo-500/5 to-violet-500/5 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="flex flex-col sm:flex-row items-center gap-5 relative z-10 text-center sm:text-left w-full md:w-auto">
+        <div className="flex flex-col sm:flex-row items-center gap-5 relative z-10 text-center sm:text-left w-full lg:w-auto">
           <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-3xl bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-200 text-white font-extrabold text-2xl sm:text-3xl shrink-0">
             {user.name.charAt(0).toUpperCase()}
           </div>
@@ -227,11 +312,30 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                 </span>
               )}
             </div>
+
+            {/* Display Badges */}
+            {getBadges().length > 0 && (
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 pt-2">
+                {getBadges().map(badge => {
+                  const IconComponent = badge.icon;
+                  return (
+                    <span 
+                      key={badge.name}
+                      className={`flex items-center gap-1.5 px-3 py-1 border rounded-full text-xs font-extrabold shadow-sm ${badge.color}`}
+                      title={badge.desc}
+                    >
+                      <IconComponent className="h-3.5 w-3.5 shrink-0" />
+                      <span>{badge.name}</span>
+                    </span>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Supporter Dashboard Statistics Quick View */}
-        <div className="grid grid-cols-1 min-[350px]:grid-cols-3 gap-2.5 sm:gap-4 w-full md:w-auto relative z-10 profile-stats-grid">
+        <div className="grid grid-cols-1 min-[350px]:grid-cols-3 gap-2.5 sm:gap-4 w-full lg:w-auto relative z-10 profile-stats-grid">
           <div className="bg-white hover:bg-slate-50 border border-slate-100 p-2.5 sm:p-4 rounded-2xl text-center shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center gap-1.5 sm:gap-2 relative group overflow-hidden">
             <div className="absolute top-0 inset-x-0 h-1 bg-indigo-500" />
             <div className="p-1.5 rounded-xl bg-indigo-50 text-indigo-600 transition-transform duration-300 group-hover:scale-110">
@@ -427,6 +531,23 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                                     <p>💬 <strong>Support Message:</strong> "{donation.message}"</p>
                                   )}
                                   <p>🔑 <strong>Donation ID:</strong> <span className="font-mono text-slate-500 select-all">{donation._id}</span></p>
+                                  
+                                  {/* Recurring Pledge Display */}
+                                  {donation.recurringType && donation.recurringType !== 'once' && (
+                                    <div className="pt-2">
+                                      <p className="font-semibold text-slate-700">
+                                        🔄 <strong>Pledge Plan:</strong> <span className="text-indigo-600 uppercase font-bold">{donation.recurringType}</span> ({donation.isActiveSubscription ? 'Active' : 'Cancelled'})
+                                      </p>
+                                      {donation.isActiveSubscription && (
+                                        <button
+                                          onClick={() => handleCancelRecurring(donation._id)}
+                                          className="mt-1.5 text-rose-600 hover:text-white hover:bg-rose-600 px-2.5 py-1 rounded-lg border border-rose-200 hover:border-transparent text-[10px] font-extrabold transition-all duration-300 cursor-pointer"
+                                        >
+                                          Cancel Pledge Plan
+                                        </button>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="space-y-1.5 md:text-right">
                                   {isItem && (
@@ -440,6 +561,17 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                                       )}
                                       {donation.pickupType === 'pickup' && donation.pickupTime && (
                                         <p>⏰ <strong>Time Preferred:</strong> {donation.pickupTime.toUpperCase()}</p>
+                                      )}
+                                      
+                                      {/* Courier Info */}
+                                      {donation.courierName && (
+                                        <div className="p-2.5 bg-white border border-slate-200/60 rounded-xl space-y-0.5 mt-2 text-left sm:text-right inline-block max-w-xs">
+                                          <p className="font-bold text-slate-800 text-[10px] uppercase tracking-wider">Courier Assignment</p>
+                                          <p className="text-slate-600">🛵 <strong>Agent:</strong> {donation.courierName}</p>
+                                          {donation.courierPhone && (
+                                            <p className="text-slate-600">📞 <strong>Phone:</strong> {donation.courierPhone}</p>
+                                          )}
+                                        </div>
                                       )}
                                     </>
                                   )}
@@ -498,6 +630,26 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                                   </div>
                                 </div>
                               </div>
+
+                              {/* Logistics timeline logs updates */}
+                              {isItem && donation.trackingTimeline && donation.trackingTimeline.length > 0 && (
+                                <div className="mt-6 border-t border-slate-100 pt-4">
+                                  <h5 className="text-[10px] sm:text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-3 px-1">Logistics Milestones</h5>
+                                  <div className="space-y-2 max-h-40 overflow-y-auto px-1">
+                                    {donation.trackingTimeline.map((log, idx) => (
+                                      <div key={idx} className="flex justify-between items-start text-xs border-b border-slate-100/50 pb-1.5 last:border-0 last:pb-0">
+                                        <div className="space-y-0.5">
+                                          <span className="font-extrabold text-slate-800 uppercase tracking-wider text-[9px] bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full inline-block mr-2">{log.status}</span>
+                                          <span className="text-slate-600 font-medium">{log.note}</span>
+                                        </div>
+                                        <span className="text-[9px] text-slate-400 shrink-0 font-bold ml-2">
+                                          {new Date(log.timestamp).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
@@ -572,6 +724,27 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                   </div>
 
                   <hr className="my-2 border-slate-50" />
+
+                  {/* Anonymous Toggle settings */}
+                  <div className="flex items-start gap-3 p-3.5 bg-slate-50/70 border border-slate-100 rounded-2xl">
+                    <input
+                      type="checkbox"
+                      id="edit-anonymous"
+                      name="isAnonymous"
+                      checked={editForm.isAnonymous}
+                      onChange={(e) => setEditForm({ ...editForm, isAnonymous: e.target.checked })}
+                      disabled={isUpdating}
+                      className="mt-1 h-4.5 w-4.5 text-indigo-600 border-slate-200 rounded-xl focus:ring-indigo-500/20 cursor-pointer"
+                    />
+                    <div className="space-y-0.5">
+                      <label htmlFor="edit-anonymous" className="block text-xs sm:text-sm font-bold text-slate-700 cursor-pointer select-none">
+                        Keep my support anonymous on the Honour Roll
+                      </label>
+                      <p className="text-[10px] sm:text-xs text-slate-400 font-semibold leading-relaxed">
+                        If selected, your donations will display under "Anonymous Supporter" on the public Honour Roll ranking.
+                      </p>
+                    </div>
+                  </div>
 
                     <div className="p-2.5 min-[285px]:p-4 bg-slate-50/50 border border-slate-100 rounded-2xl space-y-3 sm:space-y-4 profile-password-card">
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Change Password (Optional)</span>

@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Gift, Sparkles, Info, Mail, LogOut, Shield, ArrowUp } from 'lucide-react';
+import { Menu, X, Gift, Sparkles, Info, Mail, LogOut, Shield, ArrowUp, Trophy } from 'lucide-react';
 import Home from './pages/Home';
 import DonationFlow from './pages/DonationFlow';
 import About from './pages/About';
@@ -11,6 +11,7 @@ import NotFound from './pages/NotFound';
 import Footer from './components/Footer';
 import FullScreenAuth from './components/FullScreenAuth';
 import Profile from './pages/Profile'; // Supporter dashboard view
+import Leaderboard from './pages/Leaderboard';
 
 // Automatically scroll window to top when routing changes
 function ScrollToTop() {
@@ -119,6 +120,7 @@ function AppContent() {
 
   const menuItems = [
     { name: 'Campaigns', path: '/', icon: Sparkles },
+    { name: 'Honour Roll', path: '/leaderboard', icon: Trophy },
     { name: 'About Us', path: '/about', icon: Info },
     { name: 'Contact', path: '/contact', icon: Mail },
     ...(user?.role === 'admin' ? [{ name: 'Admin Panel', path: '/admin', icon: Shield }] : [])
@@ -345,6 +347,7 @@ function AppContent() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/campaigns" element={<Home />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/donate/:campaignId" element={<DonationFlow />} />

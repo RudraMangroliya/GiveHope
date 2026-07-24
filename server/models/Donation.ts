@@ -17,6 +17,17 @@ export interface IDonation extends Document {
   pickupAddress?: string;
   pickupPhone?: string;
   pickupTime?: string;
+  // Recurring Pledges
+  recurringType?: 'once' | 'monthly' | 'quarterly';
+  isActiveSubscription?: boolean;
+  // Courier Tracking details
+  courierName?: string;
+  courierPhone?: string;
+  trackingTimeline?: Array<{
+    status: string;
+    note: string;
+    timestamp: Date;
+  }>;
 }
 
 const DonationSchema: Schema = new Schema({
@@ -36,6 +47,20 @@ const DonationSchema: Schema = new Schema({
   pickupAddress: { type: String },
   pickupPhone: { type: String },
   pickupTime: { type: String },
+  // Recurring fields
+  recurringType: { type: String, enum: ['once', 'monthly', 'quarterly'], default: 'once' },
+  isActiveSubscription: { type: Boolean, default: true },
+  // Tracking logistics
+  courierName: { type: String },
+  courierPhone: { type: String },
+  trackingTimeline: {
+    type: [{
+      status: String,
+      note: String,
+      timestamp: { type: Date, default: Date.now }
+    }],
+    default: []
+  }
 });
 
 export default mongoose.model<IDonation>('Donation', DonationSchema);
