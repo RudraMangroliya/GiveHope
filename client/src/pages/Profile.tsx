@@ -467,8 +467,8 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                             </div>
 
                             {/* Right segment */}
-                            <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-50 profile-donation-details">
-                              <div className="text-left sm:text-right">
+                            <div className="flex flex-col min-[500px]:flex-row items-start min-[500px]:items-center justify-between sm:justify-end gap-3 sm:gap-4 w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100 profile-donation-details">
+                              <div className="text-left sm:text-right w-full min-[500px]:w-auto">
                                 {isItem ? (
                                   <>
                                     <span className="text-xs sm:text-sm font-extrabold text-slate-800 block">
@@ -488,7 +488,7 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                                 )}
                               </div>
 
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1.5 min-[320px]:gap-2 w-full min-[500px]:w-auto justify-start min-[500px]:justify-end">
                                 {/* Status Indicator */}
                                 <span className={`px-3 py-1 text-[10px] sm:text-xs font-extrabold rounded-full border shadow-sm ${
                                   donation.status === 'completed'
@@ -668,16 +668,16 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                                   <h5 className="text-[10px] sm:text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-3 px-1">Logistics Milestones</h5>
                                   <div className="space-y-2 max-h-40 overflow-y-auto px-1">
                                     {donation.trackingTimeline.map((log, idx) => (
-                                      <div key={idx} className="flex justify-between items-start text-xs border-b border-slate-100/50 pb-1.5 last:border-0 last:pb-0">
-                                        <div className="space-y-0.5">
-                                          <span className="font-extrabold text-slate-800 uppercase tracking-wider text-[9px] bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full inline-block mr-2">{log.status}</span>
-                                          <span className="text-slate-600 font-medium">{log.note}</span>
-                                        </div>
-                                        <span className="text-[9px] text-slate-400 shrink-0 font-bold ml-2">
-                                          {new Date(log.timestamp).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                                        </span>
-                                      </div>
-                                    ))}
+                                       <div key={idx} className="flex flex-col min-[450px]:flex-row justify-between items-start min-[450px]:items-center text-xs border-b border-slate-100/50 pb-1.5 last:border-0 last:pb-0 gap-1 min-[450px]:gap-2">
+                                         <div className="space-y-0.5 flex-1 min-w-0">
+                                           <span className="font-extrabold text-slate-800 uppercase tracking-wider text-[9px] bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full inline-block mr-2 shrink-0">{log.status}</span>
+                                           <span className="text-slate-650 font-semibold text-[11px] sm:text-xs block min-[320px]:inline mt-1 min-[320px]:mt-0">{log.note}</span>
+                                         </div>
+                                         <span className="text-[9px] text-slate-400 shrink-0 font-bold ml-2 min-[450px]:ml-0 pl-2 min-[450px]:pl-0">
+                                           {new Date(log.timestamp).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                         </span>
+                                       </div>
+                                     ))}
                                   </div>
                                 </div>
                               )}
