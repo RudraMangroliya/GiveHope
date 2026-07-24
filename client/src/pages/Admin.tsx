@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Edit2, Trash2, Check, Clock, Shield, AlertCircle, 
   TrendingUp, Heart, Award, RefreshCw, X, Image as ImageIcon,
-  FolderKanban, HeartHandshake, Search, Download, Filter
+  FolderKanban, HeartHandshake, Search, Download, Filter, ChevronDown
 } from 'lucide-react';
 import axios from 'axios';
 import LoadingState from '../components/LoadingState';
@@ -45,6 +45,222 @@ interface Donation {
     timestamp: string;
   }>;
 }
+
+const StatusDropdown = ({
+  status,
+  onChange,
+  disabled
+}: {
+  status: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const options = [
+    { value: 'pending', label: 'Pending', dot: 'bg-amber-500' },
+    { value: 'verified', label: 'Verified', dot: 'bg-sky-500' },
+    { value: 'approved', label: 'Approved', dot: 'bg-purple-500' },
+    { value: 'completed', label: 'Completed', dot: 'bg-emerald-500' }
+  ];
+
+  const currentOpt = options.find(o => o.value === status.toLowerCase().trim()) || options[0];
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClose = () => setIsOpen(false);
+    window.addEventListener('click', handleClose);
+    return () => window.removeEventListener('click', handleClose);
+  }, [isOpen]);
+
+  const normStatus = status.toLowerCase().trim();
+
+  return (
+    <div className="relative w-full" onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full h-9 pl-3 pr-8 rounded-xl font-bold text-[10px] min-[280px]:text-xs outline-none border transition-all cursor-pointer disabled:opacity-60 shadow-sm flex items-center justify-between relative text-left ${
+          normStatus === 'completed' ? 'bg-emerald-50 border-emerald-200/80 text-emerald-700 hover:bg-emerald-100/50' :
+          normStatus === 'approved' ? 'bg-purple-50 border-purple-200/80 text-purple-700 hover:bg-purple-100/50' :
+          normStatus === 'verified' ? 'bg-sky-50 border-sky-200/80 text-sky-700 hover:bg-sky-100/50' :
+          'bg-amber-50 border-amber-200/80 text-amber-700 hover:bg-amber-100/50'
+        }`}
+      >
+        <span className="flex items-center gap-1.5 truncate">
+          <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${currentOpt.dot}`} />
+          {currentOpt.label}
+        </span>
+        <ChevronDown className={`absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none h-4 w-4 opacity-70 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 right-0 mt-1.5 bg-white border border-slate-100 rounded-xl shadow-xl py-1 z-[999] overflow-hidden animate-in fade-in slide-in-from-top-1 duration-100">
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => {
+                onChange(opt.value);
+                setIsOpen(false);
+              }}
+              className="w-full px-3 py-2 text-left text-[10px] min-[280px]:text-xs font-bold transition-colors flex items-center gap-2 hover:bg-slate-50 text-slate-700 cursor-pointer"
+            >
+              <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${opt.dot}`} />
+              <span className={opt.value === 'completed' ? 'text-emerald-700' :
+                opt.value === 'approved' ? 'text-purple-700' :
+                opt.value === 'verified' ? 'text-sky-700' :
+                'text-amber-700'
+              }>
+                {opt.label}
+              </span>
+              {normStatus === opt.value && (
+                <Check className="h-3.5 w-3.5 ml-auto text-slate-500" />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const FormSelect = ({
+  value,
+  onChange,
+  options,
+  placeholder = "Select Option",
+  disabled = false
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  options: Array<{ value: string; label: string }>;
+  placeholder?: string;
+  disabled?: boolean;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const currentOpt = options.find(o => o.value === value);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClose = () => setIsOpen(false);
+    window.addEventListener('click', handleClose);
+    return () => window.removeEventListener('click', handleClose);
+  }, [isOpen]);
+
+  return (
+    <div className="relative w-full" onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl min-[280px]:rounded-2xl text-slate-800 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all duration-300 cursor-pointer flex items-center justify-between text-left relative min-h-[42px]"
+      >
+        <span className="truncate pr-6 font-bold text-gray-700">
+          {currentOpt ? currentOpt.label : placeholder}
+        </span>
+        <ChevronDown className={`absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none h-4 w-4 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 right-0 mt-1 bg-white border border-slate-100 rounded-xl shadow-lg py-1 z-[999] max-h-52 overflow-y-auto overflow-x-hidden animate-in fade-in slide-in-from-top-1 duration-100">
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => {
+                onChange(opt.value);
+                setIsOpen(false);
+              }}
+              className="w-full px-3 py-2 text-left text-xs sm:text-sm font-bold text-slate-700 hover:bg-slate-50 hover:text-indigo-700 transition-colors flex items-center justify-between cursor-pointer"
+            >
+              <span>{opt.label}</span>
+              {value === opt.value && (
+                <Check className="h-4 w-4 text-indigo-600" />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const FilterSelect = ({
+  value,
+  onChange,
+  options,
+  icon,
+  className = ""
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  options: Array<{ value: string; label: string }>;
+  icon?: React.ReactNode;
+  className?: string;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const currentOpt = options.find(o => o.value === value.toLowerCase().trim());
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClose = () => setIsOpen(false);
+    window.addEventListener('click', handleClose);
+    return () => window.removeEventListener('click', handleClose);
+  }, [isOpen]);
+
+  return (
+    <div className={`relative ${className}`} onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between gap-1.5 bg-white border border-slate-300/80 rounded-xl px-3 py-1.5 text-slate-800 font-bold text-xs outline-none cursor-pointer shadow-sm min-h-[34px] relative pr-6 select-none"
+      >
+        <span className="flex items-center gap-1.5 leading-none">
+          {icon}
+          {currentOpt ? currentOpt.label : "Select"}
+        </span>
+        <ChevronDown className={`absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none h-3.5 w-3.5 text-slate-405 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 mt-1 min-w-[120px] bg-white border border-slate-100 rounded-xl shadow-lg py-1 z-[999] animate-in fade-in slide-in-from-top-1 duration-100">
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => {
+                onChange(opt.value);
+                setIsOpen(false);
+              }}
+              className="w-full px-3 py-2 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-indigo-700 transition-colors flex items-center justify-between cursor-pointer"
+            >
+              <span>{opt.label}</span>
+              {value.toLowerCase().trim() === opt.value && (
+                <Check className="h-3.5 w-3.5 text-indigo-600" />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const typeFilterOptions = [
+  { value: 'all', label: 'All Types' },
+  { value: 'money', label: 'Monetary (₹)' },
+  { value: 'item', label: 'Items' }
+];
+
+const statusFilterOptions = [
+  { value: 'all', label: 'All Statuses' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'verified', label: 'Verified' },
+  { value: 'approved', label: 'Approved' },
+  { value: 'completed', label: 'Completed' }
+];
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -722,55 +938,30 @@ export default function Admin() {
                 
                 {/* 1. Mobile & Small Screen Dual Dropdowns (shown under 680px viewport) */}
                 <div className="flex flex-col min-[480px]:flex-row min-[680px]:hidden items-stretch min-[480px]:items-center gap-1.5 w-full">
-                  {/* Type Filter Dropdown */}
-                  <div className="w-full min-[480px]:flex-1 flex items-center justify-between gap-2 bg-white border border-slate-300/80 rounded-xl px-3 py-2 shadow-sm min-w-0">
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <Filter className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-                      <span className="text-xs font-bold text-slate-400">Type:</span>
-                    </div>
-                    <select
-                      value={typeFilter}
-                      onChange={(e) => setTypeFilter(e.target.value as any)}
-                      className="bg-transparent text-slate-800 font-extrabold text-xs outline-none cursor-pointer text-right w-full min-w-0"
-                    >
-                      <option value="all">All Types</option>
-                      <option value="money">Monetary (₹)</option>
-                      <option value="item">Items</option>
-                    </select>
-                  </div>
+                  <FilterSelect
+                    value={typeFilter}
+                    onChange={(val) => setTypeFilter(val as any)}
+                    options={typeFilterOptions}
+                    icon={<Filter className="h-3.5 w-3.5 text-slate-500 shrink-0" />}
+                    className="w-full min-[480px]:flex-1"
+                  />
 
-                  {/* Status Filter Dropdown */}
-                  <div className="w-full min-[480px]:flex-1 flex items-center justify-between gap-2 bg-white border border-slate-300/80 rounded-xl px-3 py-2 shadow-sm min-w-0">
-                    <span className="text-xs font-bold text-slate-400 shrink-0">Status:</span>
-                    <select
-                      value={statusFilter}
-                      onChange={(e) => setStatusFilter(e.target.value as any)}
-                      className="bg-transparent text-slate-800 font-extrabold text-xs outline-none cursor-pointer text-right capitalize w-full min-w-0"
-                    >
-                      <option value="all">All Statuses</option>
-                      <option value="pending">Pending</option>
-                      <option value="verified">Verified</option>
-                      <option value="approved">Approved</option>
-                      <option value="completed">Completed</option>
-                    </select>
-                  </div>
+                  <FilterSelect
+                    value={statusFilter}
+                    onChange={(val) => setStatusFilter(val as any)}
+                    options={statusFilterOptions}
+                    className="w-full min-[480px]:flex-1"
+                  />
                 </div>
 
                 {/* 2. Desktop/Tablet Filter Controls (shown from 680px viewport onwards) */}
                 <div className="hidden min-[680px]:flex items-center gap-2 w-full min-[680px]:w-auto">
-                  {/* Type Filter Dropdown */}
-                  <div className="flex items-center gap-1 bg-white border border-slate-300/80 rounded-xl px-2.5 py-1.5 shrink-0 shadow-sm">
-                    <Filter className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-                    <select
-                      value={typeFilter}
-                      onChange={(e) => setTypeFilter(e.target.value as any)}
-                      className="bg-transparent text-slate-800 font-bold text-xs outline-none cursor-pointer"
-                    >
-                      <option value="all">All Types</option>
-                      <option value="money">Monetary (₹)</option>
-                      <option value="item">Items</option>
-                    </select>
-                  </div>
+                  <FilterSelect
+                    value={typeFilter}
+                    onChange={(val) => setTypeFilter(val as any)}
+                    options={typeFilterOptions}
+                    icon={<Filter className="h-3.5 w-3.5 text-slate-500 shrink-0" />}
+                  />
 
                   {/* Status Filter Segmented Pills Container */}
                   <div className="flex items-center gap-1 bg-slate-200/70 border border-slate-300/60 p-1 rounded-xl shrink-0 shadow-inner">
@@ -818,9 +1009,9 @@ export default function Admin() {
                         <div className="text-[9px] min-[280px]:text-[10px] text-slate-400 font-semibold break-all mt-0.5 leading-tight">{d.email}</div>
                       </div>
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] min-[280px]:text-[9px] font-extrabold border uppercase tracking-wider shrink-0 ${
-                        d.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80' :
-                        d.status === 'approved' ? 'bg-indigo-50 text-indigo-700 border-indigo-200/80' :
-                        d.status === 'verified' ? 'bg-cyan-50 text-cyan-700 border-cyan-200/80' :
+                        d.status.toLowerCase().trim() === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80' :
+                        d.status.toLowerCase().trim() === 'approved' ? 'bg-purple-50 text-purple-700 border-purple-200/80' :
+                        d.status.toLowerCase().trim() === 'verified' ? 'bg-sky-50 text-sky-700 border-sky-200/80' :
                         'bg-amber-50 text-amber-700 border-amber-200/80'
                       }`}>
                         <span>{d.status}</span>
@@ -864,17 +1055,11 @@ export default function Admin() {
                   <div className="pt-2 border-t border-slate-100 flex flex-col gap-1.5 mt-1">
                     <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Update Status & Receipt</label>
                     <div className="flex flex-col gap-2">
-                      <select
-                        value={d.status}
+                      <StatusDropdown
+                        status={d.status}
                         disabled={updatingDonationIds.includes(d._id)}
-                        onChange={(e) => handleStatusChange(d._id, e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 text-slate-800 h-9 px-3 rounded-xl font-bold text-[10px] min-[280px]:text-xs outline-none focus:border-indigo-500 focus:bg-white transition-all cursor-pointer disabled:opacity-60 shadow-sm"
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="verified">Verified</option>
-                        <option value="approved">Approved</option>
-                        <option value="completed">Completed</option>
-                      </select>
+                        onChange={(value) => handleStatusChange(d._id, value)}
+                      />
 
                       <div className="flex items-center gap-1.5 w-full">
                         {d.donationType === 'item' && (
@@ -962,29 +1147,25 @@ export default function Admin() {
                       </td>
                       <td className="py-4 px-5 whitespace-nowrap">
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border uppercase tracking-wider ${
-                          d.status === 'completed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                          d.status === 'approved' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
-                          d.status === 'verified' ? 'bg-cyan-50 text-cyan-600 border-cyan-100' :
-                          'bg-amber-50 text-amber-600 border-amber-100'
+                          d.status.toLowerCase().trim() === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80' :
+                          d.status.toLowerCase().trim() === 'approved' ? 'bg-purple-50 text-purple-700 border-purple-200/80' :
+                          d.status.toLowerCase().trim() === 'verified' ? 'bg-sky-50 text-sky-700 border-sky-200/80' :
+                          'bg-amber-50 text-amber-700 border-amber-200/80'
                         }`}>
-                          {d.status === 'completed' && <Check className="h-3.5 w-3.5" />}
-                          {d.status === 'pending' && <Clock className="h-3.5 w-3.5" />}
+                          {d.status.toLowerCase().trim() === 'completed' && <Check className="h-3.5 w-3.5" />}
+                          {d.status.toLowerCase().trim() === 'pending' && <Clock className="h-3.5 w-3.5" />}
                           <span>{d.status}</span>
                         </span>
                       </td>
                       <td className="py-4 px-5 text-center min-w-[160px] min-[1280px]:min-w-[280px]">
                         <div className="flex flex-col min-[1280px]:flex-row items-stretch min-[1280px]:items-center justify-center gap-1.5 max-w-[280px] min-[1280px]:max-w-none mx-auto">
-                          <select
-                            value={d.status}
-                            disabled={updatingDonationIds.includes(d._id)}
-                            onChange={(e) => handleStatusChange(d._id, e.target.value)}
-                            className="bg-slate-50 border border-slate-200 text-slate-700 h-9 px-3 rounded-xl font-semibold text-xs outline-none focus:border-indigo-500 focus:bg-white transition-all cursor-pointer disabled:opacity-60 w-full min-[1280px]:w-auto text-center"
-                          >
-                            <option value="pending">Pending</option>
-                            <option value="verified">Verified</option>
-                            <option value="approved">Approved</option>
-                            <option value="completed">Completed</option>
-                          </select>
+                          <div className="w-full min-[1280px]:w-[120px] shrink-0">
+                            <StatusDropdown
+                              status={d.status}
+                              disabled={updatingDonationIds.includes(d._id)}
+                              onChange={(value) => handleStatusChange(d._id, value)}
+                            />
+                          </div>
 
                           <div className="flex items-center gap-1.5 w-full min-[1280px]:w-auto justify-center">
                             {d.donationType === 'item' && (
@@ -1090,18 +1271,12 @@ export default function Admin() {
                   {/* Category */}
                   <div className="space-y-1.5">
                     <label htmlFor="campaign-category" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Category</label>
-                    <select
-                      id="campaign-category"
-                      name="category"
+                    <FormSelect
                       value={campaignCategory}
-                      onChange={(e) => setCampaignCategory(e.target.value)}
+                      onChange={setCampaignCategory}
                       disabled={formSubmitting}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl min-[280px]:rounded-2xl text-slate-800 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all duration-300 cursor-pointer"
-                    >
-                      {categoriesList.map((cat) => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
+                      options={categoriesList.map(cat => ({ value: cat, label: cat }))}
+                    />
                   </div>
 
                   {/* Goal */}
@@ -1246,21 +1421,20 @@ export default function Admin() {
 
                 <div className="space-y-1.5">
                   <label htmlFor="tracking-status" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Tracking Step Status</label>
-                  <select
-                    id="tracking-status"
+                  <FormSelect
                     value={trackingStatus}
-                    onChange={(e) => setTrackingStatus(e.target.value)}
+                    onChange={setTrackingStatus}
                     disabled={trackingSubmitting}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all duration-300 cursor-pointer"
-                  >
-                    <option value="pending">Pending Review</option>
-                    <option value="verified">Verified</option>
-                    <option value="approved">Approved & Scheduled</option>
-                    <option value="dispatched">Dispatched for Pickup</option>
-                    <option value="picked_up">Picked Up from Address</option>
-                    <option value="received">Received at WareHouse</option>
-                    <option value="completed">Delivered & Complete</option>
-                  </select>
+                    options={[
+                      { value: 'pending', label: 'Pending Review' },
+                      { value: 'verified', label: 'Verified' },
+                      { value: 'approved', label: 'Approved & Scheduled' },
+                      { value: 'dispatched', label: 'Dispatched for Pickup' },
+                      { value: 'picked_up', label: 'Picked Up from Address' },
+                      { value: 'received', label: 'Received at WareHouse' },
+                      { value: 'completed', label: 'Delivered & Complete' }
+                    ]}
+                  />
                 </div>
 
                 <div className="space-y-1.5">

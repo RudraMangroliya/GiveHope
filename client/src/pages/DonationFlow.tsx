@@ -1,11 +1,72 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, CreditCard, Coins, User, ArrowLeft, X, AlertCircle, Download } from 'lucide-react';
+import { Check, CreditCard, Coins, User, ArrowLeft, X, AlertCircle, Download, ChevronDown } from 'lucide-react';
 import axios from 'axios';
 import LoadingState from '../components/LoadingState';
 import { API_BASE_URL } from '../config';
 import { generate80GReceipt, type ReceiptDonationData } from '../utils/generateReceipt';
+
+const FormSelect = ({
+  value,
+  onChange,
+  options,
+  placeholder = "Select Option",
+  disabled = false
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  options: Array<{ value: string; label: string }>;
+  placeholder?: string;
+  disabled?: boolean;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const currentOpt = options.find(o => o.value === value);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClose = () => setIsOpen(false);
+    window.addEventListener('click', handleClose);
+    return () => window.removeEventListener('click', handleClose);
+  }, [isOpen]);
+
+  return (
+    <div className="relative w-full" onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setIsOpen(!isOpen)}
+        className="block w-full rounded-xl border-gray-350 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 py-2 sm:py-3 border px-2.5 sm:px-4 transition-all focus:shadow-md text-xs min-[320px]:text-sm sm:text-base bg-white text-left font-bold text-gray-700 disabled:opacity-60 cursor-pointer min-h-[38px] sm:min-h-[46px] relative"
+      >
+        <span className="truncate pr-6">
+          {currentOpt ? currentOpt.label : placeholder}
+        </span>
+        <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none h-4 w-4 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-[999] max-h-52 overflow-y-auto overflow-x-hidden animate-in fade-in slide-in-from-top-1 duration-100">
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => {
+                onChange(opt.value);
+                setIsOpen(false);
+              }}
+              className="w-full px-3 py-2 text-left text-xs min-[320px]:text-sm sm:text-base font-bold text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center justify-between cursor-pointer"
+            >
+              <span>{opt.label}</span>
+              {value === opt.value && (
+                <Check className="h-4 w-4 text-indigo-600" />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface Campaign {
   _id: string;
@@ -328,20 +389,18 @@ const DonationFlow = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="item-category" className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">Item Category</label>
-                    <select
-                      id="item-category"
-                      name="item-category"
+                    <FormSelect
                       value={formData.itemCategory}
-                      onChange={(e) => setFormData({ ...formData, itemCategory: e.target.value })}
-                      className="block w-full rounded-xl border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 py-2 sm:py-3 border px-2.5 sm:px-4 transition-shadow focus:shadow-md text-xs min-[320px]:text-sm sm:text-base bg-white"
-                    >
-                      <option value="clothes">Clothes & Garments</option>
-                      <option value="books">Books & Stationery</option>
-                      <option value="food">Dry Food & Rations</option>
-                      <option value="blankets">Blankets & Linens</option>
-                      <option value="toys">Toys & Playkits</option>
-                      <option value="other">Other Supplies</option>
-                    </select>
+                      onChange={(val) => setFormData({ ...formData, itemCategory: val })}
+                      options={[
+                        { value: 'clothes', label: 'Clothes & Garments' },
+                        { value: 'books', label: 'Books & Stationery' },
+                        { value: 'food', label: 'Dry Food & Rations' },
+                        { value: 'blankets', label: 'Blankets & Linens' },
+                        { value: 'toys', label: 'Toys & Playkits' },
+                        { value: 'other', label: 'Other Supplies' }
+                      ]}
+                    />
                   </div>
                   <div className="grid grid-cols-1 min-[300px]:grid-cols-2 gap-3">
                     <div>
@@ -362,19 +421,17 @@ const DonationFlow = () => {
                     </div>
                     <div>
                       <label htmlFor="item-unit" className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">Unit</label>
-                      <select
-                        id="item-unit"
-                        name="item-unit"
+                      <FormSelect
                         value={formData.quantityUnit}
-                        onChange={(e) => setFormData({ ...formData, quantityUnit: e.target.value })}
-                        className="block w-full rounded-xl border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 py-2 sm:py-3 border px-2.5 sm:px-4 transition-shadow focus:shadow-md text-xs min-[320px]:text-sm sm:text-base bg-white"
-                      >
-                        <option value="items">Items / Pcs</option>
-                        <option value="boxes">Boxes</option>
-                        <option value="kg">KG</option>
-                        <option value="packets">Packets</option>
-                        <option value="bags">Bags</option>
-                      </select>
+                        onChange={(val) => setFormData({ ...formData, quantityUnit: val })}
+                        options={[
+                          { value: 'items', label: 'Items / Pcs' },
+                          { value: 'boxes', label: 'Boxes' },
+                          { value: 'kg', label: 'KG' },
+                          { value: 'packets', label: 'Packets' },
+                          { value: 'bags', label: 'Bags' }
+                        ]}
+                      />
                     </div>
                   </div>
                 </div>
@@ -588,17 +645,15 @@ const DonationFlow = () => {
                         </div>
                         <div>
                           <label htmlFor="pickup-time" className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5">Preferred Time Window</label>
-                          <select
-                            id="pickup-time"
-                            name="pickup-time"
+                          <FormSelect
                             value={formData.pickupTime}
-                            onChange={(e) => setFormData({ ...formData, pickupTime: e.target.value })}
-                            className="block w-full rounded-xl border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 py-2 sm:py-3 border px-2.5 sm:px-4 transition-shadow focus:shadow-md text-xs min-[320px]:text-sm sm:text-base bg-white"
-                          >
-                            <option value="morning">Morning (9:00 AM - 12:00 PM)</option>
-                            <option value="afternoon">Afternoon (12:00 PM - 4:00 PM)</option>
-                            <option value="evening">Evening (4:00 PM - 8:00 PM)</option>
-                          </select>
+                            onChange={(val) => setFormData({ ...formData, pickupTime: val })}
+                            options={[
+                              { value: 'morning', label: 'Morning (9:00 AM - 12:00 PM)' },
+                              { value: 'afternoon', label: 'Afternoon (12:00 PM - 4:00 PM)' },
+                              { value: 'evening', label: 'Evening (4:00 PM - 8:00 PM)' }
+                            ]}
+                          />
                         </div>
                       </div>
                     </div>

@@ -491,11 +491,11 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                               <div className="flex items-center gap-1.5 min-[320px]:gap-2 w-full min-[500px]:w-auto justify-start min-[500px]:justify-end">
                                 {/* Status Indicator */}
                                 <span className={`h-8 sm:h-9 px-3 text-[10px] sm:text-xs font-extrabold rounded-xl border shadow-sm flex items-center justify-center shrink-0 ${
-                                  donation.status === 'completed'
+                                  donation.status.toLowerCase().trim() === 'completed'
                                     ? 'bg-green-50 text-green-700 border-green-200/60'
-                                    : donation.status === 'approved'
-                                    ? 'bg-violet-50 text-violet-700 border-violet-200/60'
-                                    : donation.status === 'verified'
+                                    : donation.status.toLowerCase().trim() === 'approved'
+                                    ? 'bg-purple-50 text-purple-700 border-purple-200/60'
+                                    : donation.status.toLowerCase().trim() === 'verified'
                                     ? 'bg-sky-50 text-sky-700 border-sky-200/60'
                                     : 'bg-amber-50 text-amber-700 border-amber-200/60'
                                 }`}>
@@ -676,13 +676,13 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                                         {/* Status Dot */}
                                         <div className={`absolute left-0 top-1 h-3.5 w-3.5 rounded-full border-2 bg-white flex items-center justify-center ${
                                           log.status === 'completed' ? 'border-green-500 text-green-500' :
-                                          log.status === 'approved' ? 'border-violet-500 text-violet-500' :
+                                          log.status === 'approved' ? 'border-purple-500 text-purple-500' :
                                           log.status === 'verified' ? 'border-sky-500 text-sky-500' :
                                           'border-amber-500 text-amber-500'
                                         }`}>
                                           <div className={`h-1.5 w-1.5 rounded-full ${
                                             log.status === 'completed' ? 'bg-green-500' :
-                                            log.status === 'approved' ? 'bg-violet-500' :
+                                            log.status === 'approved' ? 'bg-purple-500' :
                                             log.status === 'verified' ? 'bg-sky-500' :
                                             'bg-amber-500'
                                           }`}></div>
@@ -693,7 +693,7 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                                           <div className="flex items-center flex-wrap gap-1.5 leading-none">
                                             <span className={`text-[10px] font-black uppercase tracking-wider ${
                                               log.status === 'completed' ? 'text-green-700' :
-                                              log.status === 'approved' ? 'text-violet-700' :
+                                              log.status === 'approved' ? 'text-purple-700' :
                                               log.status === 'verified' ? 'text-sky-700' :
                                               'text-amber-700'
                                             }`}>
