@@ -665,19 +665,50 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                               {/* Logistics timeline logs updates */}
                               {isItem && donation.trackingTimeline && donation.trackingTimeline.length > 0 && (
                                 <div className="mt-6 border-t border-slate-100 pt-4">
-                                  <h5 className="text-[10px] sm:text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-3 px-1">Logistics Milestones</h5>
-                                  <div className="space-y-2 max-h-40 overflow-y-auto px-1">
-                                    {donation.trackingTimeline.map((log, idx) => (
-                                       <div key={idx} className="flex flex-col min-[450px]:flex-row justify-between items-start min-[450px]:items-center text-xs border-b border-slate-100/50 pb-1.5 last:border-0 last:pb-0 gap-1 min-[450px]:gap-2">
-                                         <div className="space-y-0.5 flex-1 min-w-0">
-                                           <span className="font-extrabold text-slate-800 uppercase tracking-wider text-[9px] bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded-full inline-block mr-2 shrink-0">{log.status}</span>
-                                           <span className="text-slate-650 font-semibold text-[11px] sm:text-xs block min-[320px]:inline mt-1 min-[320px]:mt-0">{log.note}</span>
-                                         </div>
-                                         <span className="text-[9px] text-slate-400 shrink-0 font-bold ml-2 min-[450px]:ml-0 pl-2 min-[450px]:pl-0">
-                                           {new Date(log.timestamp).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                                         </span>
-                                       </div>
-                                     ))}
+                                  <h5 className="text-[10px] sm:text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-4 px-1">Logistics Milestones</h5>
+                                  <div className="relative pl-2 max-h-52 overflow-y-auto pr-1">
+                                    {donation.trackingTimeline?.map((log, idx) => (
+                                      <div key={idx} className="relative pl-6 pb-4 last:pb-0">
+                                        {/* Vertical line joining milestones */}
+                                        {idx < (donation.trackingTimeline?.length || 0) - 1 && (
+                                          <div className="absolute left-[7px] top-4 bottom-0 w-0.5 bg-slate-100"></div>
+                                        )}
+                                        {/* Status Dot */}
+                                        <div className={`absolute left-0 top-1 h-3.5 w-3.5 rounded-full border-2 bg-white flex items-center justify-center ${
+                                          log.status === 'completed' ? 'border-green-500 text-green-500' :
+                                          log.status === 'approved' ? 'border-violet-500 text-violet-500' :
+                                          log.status === 'verified' ? 'border-sky-500 text-sky-500' :
+                                          'border-amber-500 text-amber-500'
+                                        }`}>
+                                          <div className={`h-1.5 w-1.5 rounded-full ${
+                                            log.status === 'completed' ? 'bg-green-500' :
+                                            log.status === 'approved' ? 'bg-violet-500' :
+                                            log.status === 'verified' ? 'bg-sky-500' :
+                                            'bg-amber-500'
+                                          }`}></div>
+                                        </div>
+
+                                        {/* Milestone Content */}
+                                        <div className="space-y-0.5 text-left">
+                                          <div className="flex items-center flex-wrap gap-1.5 leading-none">
+                                            <span className={`text-[10px] font-black uppercase tracking-wider ${
+                                              log.status === 'completed' ? 'text-green-700' :
+                                              log.status === 'approved' ? 'text-violet-700' :
+                                              log.status === 'verified' ? 'text-sky-700' :
+                                              'text-amber-700'
+                                            }`}>
+                                              {log.status}
+                                            </span>
+                                            <span className="text-[9px] text-slate-400 font-bold">
+                                              • {new Date(log.timestamp).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                          </div>
+                                          <p className="text-xs text-slate-600 font-semibold leading-relaxed mt-1">
+                                            {log.note}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    ))}
                                   </div>
                                 </div>
                               )}
