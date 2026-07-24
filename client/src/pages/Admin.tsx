@@ -450,7 +450,7 @@ export default function Admin() {
         <button
           type="button"
           onClick={() => setActiveTab('campaigns')}
-          className={`w-full min-[680px]:w-auto flex items-center justify-center gap-2 px-3 sm:px-6 py-2.5 min-[680px]:py-2.5 rounded-xl text-[10px] min-[280px]:text-xs sm:text-base transition-all duration-300 cursor-pointer ${
+          className={`w-full min-[680px]:w-auto flex items-center justify-center gap-2 px-3 sm:px-6 py-2.5 min-[680px]:py-2.5 rounded-xl text-sm min-[360px]:text-base transition-all duration-300 cursor-pointer ${
             activeTab === 'campaigns'
               ? 'bg-white text-indigo-700 shadow-md shadow-indigo-500/10 border border-indigo-300/80 font-extrabold scale-[1.01]'
               : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 border border-transparent font-bold'
@@ -463,7 +463,7 @@ export default function Admin() {
         <button
           type="button"
           onClick={() => setActiveTab('donations')}
-          className={`w-full min-[680px]:w-auto flex items-center justify-center gap-2 px-3 sm:px-6 py-2.5 min-[680px]:py-2.5 rounded-xl text-[10px] min-[280px]:text-xs sm:text-base transition-all duration-300 cursor-pointer ${
+          className={`w-full min-[680px]:w-auto flex items-center justify-center gap-2 px-3 sm:px-6 py-2.5 min-[680px]:py-2.5 rounded-xl text-sm min-[360px]:text-base transition-all duration-300 cursor-pointer ${
             activeTab === 'donations'
               ? 'bg-white text-indigo-700 shadow-md shadow-indigo-500/10 border border-indigo-300/80 font-extrabold scale-[1.01]'
               : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 border border-transparent font-bold'
@@ -476,7 +476,7 @@ export default function Admin() {
         <button
           type="button"
           onClick={() => setActiveTab('analytics')}
-          className={`w-full min-[680px]:w-auto flex items-center justify-center gap-2 px-3 sm:px-6 py-2.5 min-[680px]:py-2.5 rounded-xl text-[10px] min-[280px]:text-xs sm:text-base transition-all duration-300 cursor-pointer ${
+          className={`w-full min-[680px]:w-auto flex items-center justify-center gap-2 px-3 sm:px-6 py-2.5 min-[680px]:py-2.5 rounded-xl text-sm min-[360px]:text-base transition-all duration-300 cursor-pointer ${
             activeTab === 'analytics'
               ? 'bg-white text-indigo-700 shadow-md shadow-indigo-500/10 border border-indigo-300/80 font-extrabold scale-[1.01]'
               : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 border border-transparent font-bold'
@@ -888,7 +888,7 @@ export default function Admin() {
                               setTrackingNote('');
                               setIsLogisticsModalOpen(true);
                             }}
-                            className="flex-1 py-1.5 px-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 font-bold text-[10px] min-[280px]:text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 shadow-sm"
+                            className="flex-1 h-9 px-3 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 font-bold text-[10px] min-[280px]:text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 shadow-sm"
                             title="Update courier pickup tracking notes"
                           >
                             <span>Logistics</span>
@@ -898,7 +898,7 @@ export default function Admin() {
                         <button
                           type="button"
                           onClick={() => generate80GReceipt(d, d.campaignId ? d.campaignId.title : 'GiveHope Cause')}
-                          className="flex-1 py-1.5 px-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 font-bold text-[10px] min-[280px]:text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 shadow-sm"
+                          className="flex-1 h-9 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 font-bold text-[10px] min-[280px]:text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 shadow-sm"
                           title="Download 80G PDF Receipt"
                         >
                           <Download className="h-3 w-3 min-[280px]:h-3.5 min-[280px]:w-3.5" />
@@ -978,7 +978,7 @@ export default function Admin() {
                             value={d.status}
                             disabled={updatingDonationIds.includes(d._id)}
                             onChange={(e) => handleStatusChange(d._id, e.target.value)}
-                            className="bg-slate-50 border border-slate-200 text-slate-700 py-1.5 px-3 rounded-xl font-semibold text-xs outline-none focus:border-indigo-500 focus:bg-white transition-all cursor-pointer disabled:opacity-60 w-full min-[1280px]:w-auto text-center"
+                            className="bg-slate-50 border border-slate-200 text-slate-700 h-9 px-3 rounded-xl font-semibold text-xs outline-none focus:border-indigo-500 focus:bg-white transition-all cursor-pointer disabled:opacity-60 w-full min-[1280px]:w-auto text-center"
                           >
                             <option value="pending">Pending</option>
                             <option value="verified">Verified</option>
@@ -998,7 +998,7 @@ export default function Admin() {
                                   setTrackingNote('');
                                   setIsLogisticsModalOpen(true);
                                 }}
-                                className="flex-1 min-[1280px]:flex-none p-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0"
+                                className="flex-1 min-[1280px]:flex-none h-9 px-3.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 shadow-sm"
                                 title="Manage Logistics Tracking"
                               >
                                 <span>Logistics</span>
@@ -1008,7 +1008,7 @@ export default function Admin() {
                             <button
                               type="button"
                               onClick={() => generate80GReceipt(d, d.campaignId ? d.campaignId.title : 'GiveHope Cause')}
-                              className="flex-1 min-[1280px]:flex-none p-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0"
+                              className="flex-1 min-[1280px]:flex-none h-9 px-3.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 shadow-sm"
                               title="Download 80G Tax Exemption PDF Receipt"
                             >
                               <Download className="h-3.5 w-3.5" />

@@ -450,9 +450,9 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                           }`}
                         >
                           {/* Donation Summary Row */}
-                          <div className="p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                          <div className="p-4 min-[850px]:p-5 flex flex-col min-[850px]:flex-row items-start min-[850px]:items-center justify-between gap-4">
                             {/* Left segment */}
-                            <div className="flex items-center gap-3.5 w-full sm:w-auto">
+                            <div className="flex items-center gap-3.5 w-full min-[850px]:w-auto">
                               <img 
                                 src={donation.campaignId?.image || 'https://picsum.photos/seed/placeholder/200'} 
                                 alt={donation.campaignId?.title || 'Campaign'} 
@@ -467,8 +467,8 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                             </div>
 
                             {/* Right segment */}
-                            <div className="flex flex-col min-[500px]:flex-row items-start min-[500px]:items-center justify-between sm:justify-end gap-3 sm:gap-4 w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100 profile-donation-details">
-                              <div className="text-left sm:text-right w-full min-[500px]:w-auto">
+                            <div className="flex flex-col min-[500px]:flex-row items-start min-[500px]:items-center justify-between min-[850px]:justify-end gap-3 min-[850px]:gap-4 w-full min-[850px]:w-auto border-t min-[850px]:border-t-0 pt-3 min-[850px]:pt-0 border-slate-100 profile-donation-details">
+                              <div className="text-left min-[850px]:text-right w-full min-[500px]:w-auto">
                                 {isItem ? (
                                   <>
                                     <span className="text-xs sm:text-sm font-extrabold text-slate-800 block">
@@ -490,7 +490,7 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
 
                               <div className="flex items-center gap-1.5 min-[320px]:gap-2 w-full min-[500px]:w-auto justify-start min-[500px]:justify-end">
                                 {/* Status Indicator */}
-                                <span className={`px-3 py-1 text-[10px] sm:text-xs font-extrabold rounded-full border shadow-sm ${
+                                <span className={`h-8 sm:h-9 px-3 text-[10px] sm:text-xs font-extrabold rounded-xl border shadow-sm flex items-center justify-center shrink-0 ${
                                   donation.status === 'completed'
                                     ? 'bg-green-50 text-green-700 border-green-200/60'
                                     : donation.status === 'approved'
@@ -505,7 +505,7 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                                 <button
                                   type="button"
                                   onClick={() => generate80GReceipt(donation, donation.campaignId?.title || 'GiveHope Cause')}
-                                  className="p-1.5 rounded-xl border border-emerald-200/80 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-extrabold text-xs px-2.5 flex items-center gap-1 transition-all duration-300 cursor-pointer shrink-0 shadow-sm"
+                                  className="h-8 sm:h-9 rounded-xl border border-emerald-200/80 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-extrabold text-[10px] sm:text-xs px-2.5 sm:px-3.5 flex items-center justify-center gap-1 transition-all duration-300 cursor-pointer shrink-0 shadow-sm"
                                   title="Download Official 80G Tax Exemption PDF Receipt"
                                 >
                                   <Download className="h-3.5 w-3.5" />
@@ -514,7 +514,7 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
 
                                 <button
                                   onClick={() => toggleExpandDonation(donation._id)}
-                                  className="p-1.5 rounded-xl border border-slate-100 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 hover:border-slate-200 transition-all duration-300 cursor-pointer text-xs font-bold px-3 shrink-0"
+                                  className="h-8 sm:h-9 rounded-xl border border-slate-100 text-slate-500 hover:text-indigo-650 hover:bg-slate-50 hover:border-slate-200 transition-all duration-300 cursor-pointer text-[10px] sm:text-xs font-bold px-3 sm:px-4 shrink-0 flex items-center justify-center shadow-sm"
                                 >
                                   {isExpanded ? 'Hide Details' : 'Track'}
                                 </button>

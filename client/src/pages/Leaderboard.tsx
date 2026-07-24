@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Award, Heart, Gift, ShieldAlert, Sparkles, Trophy, HelpCircle, HeartHandshake } from 'lucide-react';
+import { Award, Heart, Gift, ShieldAlert, Sparkles, Trophy, HelpCircle, HeartHandshake, Coins } from 'lucide-react';
 import axios from 'axios';
 import LoadingState from '../components/LoadingState';
 import { API_BASE_URL } from '../config';
@@ -205,7 +205,7 @@ export default function Leaderboard() {
                       <div className="space-y-0.5 w-full min-[350px]:w-auto">
                         {supporter.amount > 0 && (
                           <div className="text-xs sm:text-sm font-black text-slate-800 flex items-center gap-1 justify-start min-[350px]:justify-end">
-                            <Heart className="h-3 w-3 text-rose-500 fill-rose-500 shrink-0" />
+                            <Coins className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                             <span>₹{supporter.amount.toLocaleString('en-IN')}</span>
                           </div>
                         )}
