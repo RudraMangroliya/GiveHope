@@ -868,7 +868,7 @@ export default function Admin() {
                         value={d.status}
                         disabled={updatingDonationIds.includes(d._id)}
                         onChange={(e) => handleStatusChange(d._id, e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 text-slate-800 py-1.5 px-3 rounded-xl font-bold text-[10px] min-[280px]:text-xs outline-none focus:border-indigo-500 focus:bg-white transition-all cursor-pointer disabled:opacity-60 shadow-sm"
+                        className="w-full bg-slate-50 border border-slate-200 text-slate-800 h-9 px-3 rounded-xl font-bold text-[10px] min-[280px]:text-xs outline-none focus:border-indigo-500 focus:bg-white transition-all cursor-pointer disabled:opacity-60 shadow-sm"
                       >
                         <option value="pending">Pending</option>
                         <option value="verified">Verified</option>
