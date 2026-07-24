@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { 
   User, Mail, Key, Heart, 
   Eye, EyeOff, CheckCircle2, Circle, AlertCircle,
-  Gift, Award, Download, Sparkles, HeartHandshake, Trophy
+  Gift, Award, Download, Sparkles, HeartHandshake, Trophy,
+  MessageSquare, RefreshCw, Truck, MapPin, Phone, Clock, Bike, CreditCard
 } from 'lucide-react';
 import axios from 'axios';
 import LoadingState from '../components/LoadingState';
@@ -528,20 +529,29 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 mb-4 border-b border-slate-100 text-slate-600 text-xs sm:text-sm">
                                 <div className="space-y-1.5">
                                   {donation.message && (
-                                    <p>💬 <strong>Support Message:</strong> "{donation.message}"</p>
+                                    <div className="flex items-start gap-2 text-slate-700">
+                                      <MessageSquare className="h-4 w-4 text-indigo-500 shrink-0 mt-0.5" />
+                                      <p><strong>Support Message:</strong> "{donation.message}"</p>
+                                    </div>
                                   )}
-                                  <p>🔑 <strong>Donation ID:</strong> <span className="font-mono text-slate-500 select-all">{donation._id}</span></p>
+                                  <div className="flex items-center gap-2 text-slate-750">
+                                    <Key className="h-4 w-4 text-indigo-500 shrink-0" />
+                                    <p><strong>Donation ID:</strong> <span className="font-mono text-slate-500 select-all">{donation._id}</span></p>
+                                  </div>
                                   
                                   {/* Recurring Pledge Display */}
                                   {donation.recurringType && donation.recurringType !== 'once' && (
                                     <div className="pt-2">
-                                      <p className="font-semibold text-slate-700">
-                                        🔄 <strong>Pledge Plan:</strong> <span className="text-indigo-600 uppercase font-bold">{donation.recurringType}</span> ({donation.isActiveSubscription ? 'Active' : 'Cancelled'})
-                                      </p>
+                                      <div className="flex items-center gap-2 text-slate-750">
+                                        <RefreshCw className="h-4 w-4 text-indigo-500 shrink-0" />
+                                        <p className="font-semibold text-slate-700">
+                                          <strong>Pledge Plan:</strong> <span className="text-indigo-600 uppercase font-bold">{donation.recurringType}</span> ({donation.isActiveSubscription ? 'Active' : 'Cancelled'})
+                                        </p>
+                                      </div>
                                       {donation.isActiveSubscription && (
                                         <button
                                           onClick={() => handleCancelRecurring(donation._id)}
-                                          className="mt-1.5 text-rose-600 hover:text-white hover:bg-rose-600 px-2.5 py-1 rounded-lg border border-rose-200 hover:border-transparent text-[10px] font-extrabold transition-all duration-300 cursor-pointer"
+                                          className="mt-1.5 ml-6 text-rose-600 hover:text-white hover:bg-rose-600 px-2.5 py-1 rounded-lg border border-rose-200 hover:border-transparent text-[10px] font-extrabold transition-all duration-300 cursor-pointer shadow-sm"
                                         >
                                           Cancel Pledge Plan
                                         </button>
@@ -549,34 +559,55 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                                     </div>
                                   )}
                                 </div>
-                                <div className="space-y-1.5 md:text-right">
+                                <div className="space-y-1.5 md:text-right flex flex-col md:items-end">
                                   {isItem && (
                                     <>
-                                      <p>🚚 <strong>Fulfillment Type:</strong> {donation.pickupType === 'pickup' ? 'Request Home Pickup' : 'Self Drop-off CP Center'}</p>
+                                      <div className="flex items-center gap-2">
+                                        <Truck className="h-4 w-4 text-indigo-500 shrink-0" />
+                                        <p><strong>Fulfillment Type:</strong> {donation.pickupType === 'pickup' ? 'Request Home Pickup' : 'Self Drop-off CP Center'}</p>
+                                      </div>
                                       {donation.pickupType === 'pickup' && donation.pickupAddress && (
-                                        <p>📍 <strong>Pickup Spot:</strong> {donation.pickupAddress}</p>
+                                        <div className="flex items-start gap-2">
+                                          <MapPin className="h-4 w-4 text-indigo-500 shrink-0 mt-0.5" />
+                                          <p className="text-left md:text-right"><strong>Pickup Spot:</strong> {donation.pickupAddress}</p>
+                                        </div>
                                       )}
                                       {donation.pickupPhone && (
-                                        <p>📞 <strong>Contact Phone:</strong> {donation.pickupPhone}</p>
+                                        <div className="flex items-center gap-2">
+                                          <Phone className="h-4 w-4 text-indigo-500 shrink-0" />
+                                          <p><strong>Contact Phone:</strong> {donation.pickupPhone}</p>
+                                        </div>
                                       )}
                                       {donation.pickupType === 'pickup' && donation.pickupTime && (
-                                        <p>⏰ <strong>Time Preferred:</strong> {donation.pickupTime.toUpperCase()}</p>
+                                        <div className="flex items-center gap-2">
+                                          <Clock className="h-4 w-4 text-indigo-500 shrink-0" />
+                                          <p><strong>Time Preferred:</strong> {donation.pickupTime.toUpperCase()}</p>
+                                        </div>
                                       )}
                                       
                                       {/* Courier Info */}
                                       {donation.courierName && (
-                                        <div className="p-2.5 bg-white border border-slate-200/60 rounded-xl space-y-0.5 mt-2 text-left sm:text-right inline-block max-w-xs">
-                                          <p className="font-bold text-slate-800 text-[10px] uppercase tracking-wider">Courier Assignment</p>
-                                          <p className="text-slate-600">🛵 <strong>Agent:</strong> {donation.courierName}</p>
+                                        <div className="p-2.5 bg-white border border-slate-200/60 rounded-xl space-y-1 mt-2 text-left sm:text-right inline-block max-w-xs shadow-sm">
+                                          <p className="font-bold text-slate-800 text-[10px] uppercase tracking-wider mb-0.5">Courier Assignment</p>
+                                          <div className="flex items-center gap-2 sm:justify-end text-slate-650">
+                                            <Bike className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
+                                            <p><strong>Agent:</strong> {donation.courierName}</p>
+                                          </div>
                                           {donation.courierPhone && (
-                                            <p className="text-slate-600">📞 <strong>Phone:</strong> {donation.courierPhone}</p>
+                                            <div className="flex items-center gap-2 sm:justify-end text-slate-650">
+                                              <Phone className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
+                                              <p><strong>Phone:</strong> {donation.courierPhone}</p>
+                                            </div>
                                           )}
                                         </div>
                                       )}
                                     </>
                                   )}
                                   {!isItem && (
-                                    <p>💳 <strong>Gateway Status:</strong> Verified Secure Transaction</p>
+                                    <div className="flex items-center gap-2">
+                                      <CreditCard className="h-4 w-4 text-indigo-500 shrink-0" />
+                                      <p><strong>Gateway Status:</strong> Verified Secure Transaction</p>
+                                    </div>
                                   )}
                                 </div>
                               </div>
