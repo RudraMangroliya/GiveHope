@@ -290,11 +290,11 @@ const DonationFlow = () => {
                 {/* Frequency Selector */}
                 <div className="mb-6">
                   <span className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 text-center">Donation Frequency</span>
-                  <div className="flex bg-slate-100 p-1 rounded-2xl max-w-xs sm:max-w-md mx-auto border border-slate-200/20">
+                  <div className="flex flex-col min-[400px]:flex-row bg-slate-100 p-1 sm:p-1.5 rounded-2xl w-full max-w-xs sm:max-w-md mx-auto border border-slate-200/40 gap-1 min-[400px]:gap-0">
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, recurringType: 'once' })}
-                      className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all duration-300 ${
+                      className={`w-full min-[400px]:flex-1 py-2 sm:py-2.5 px-2 text-[11px] min-[320px]:text-xs font-bold rounded-xl transition-all duration-300 cursor-pointer ${
                         formData.recurringType === 'once'
                           ? 'bg-white text-indigo-600 shadow-sm border border-slate-100/50'
                           : 'text-slate-500 hover:text-slate-800'
@@ -305,7 +305,7 @@ const DonationFlow = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, recurringType: 'monthly' })}
-                      className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all duration-300 ${
+                      className={`w-full min-[400px]:flex-1 py-2 sm:py-2.5 px-2 text-[11px] min-[320px]:text-xs font-bold rounded-xl transition-all duration-300 cursor-pointer ${
                         formData.recurringType === 'monthly'
                           ? 'bg-white text-indigo-600 shadow-sm border border-slate-100/50'
                           : 'text-slate-500 hover:text-slate-800'
@@ -316,7 +316,7 @@ const DonationFlow = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, recurringType: 'quarterly' })}
-                      className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all duration-300 ${
+                      className={`w-full min-[400px]:flex-1 py-2 sm:py-2.5 px-2 text-[11px] min-[320px]:text-xs font-bold rounded-xl transition-all duration-300 cursor-pointer ${
                         formData.recurringType === 'quarterly'
                           ? 'bg-white text-indigo-600 shadow-sm border border-slate-100/50'
                           : 'text-slate-500 hover:text-slate-800'
@@ -805,11 +805,60 @@ const DonationFlow = () => {
   };
 
   if (loading) {
-    return <LoadingState message="Connecting to secure gateway..." height="h-96" />;
+    return (
+      <LoadingState
+        message="Connecting to secure gateway..."
+        subMessages={[
+          "Connecting to secure gateway...",
+          "Validating campaign credentials...",
+          "Establishing encrypted pipeline...",
+          "Preparing donation workspace..."
+        ]}
+        height="min-h-[60vh]"
+      />
+    );
   }
  
   return (
-    <div className="max-w-3xl mx-auto py-4 sm:py-8 px-2 sm:px-4">
+    <div className="max-w-3xl mx-auto py-4 sm:py-8 px-2 sm:px-4 relative">
+      {/* Transaction / Pickup Submission Processing Modal Overlay */}
+      <AnimatePresence>
+        {isSubmitting && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-3xl p-2 sm:p-4 max-w-md w-full shadow-2xl overflow-hidden"
+            >
+              <LoadingState
+                message={formData.donationType === 'item' ? "Registering item pickup request..." : "Processing payment gateway transaction..."}
+                subMessages={formData.donationType === 'item' 
+                  ? [
+                      "Connecting to dispatch system...",
+                      "Validating pickup address...",
+                      "Allocating local courier HUB...",
+                      "Generating tax exemption receipt..."
+                    ]
+                  : [
+                      "Authorizing encrypted payment...",
+                      "Verifying transaction credentials...",
+                      "Processing contribution...",
+                      "Generating 80G tax receipt..."
+                    ]
+                }
+                compact={true}
+                height="min-h-[280px]"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Premium Top Navigation Toolbar */}
       <div className="mb-6 sm:mb-8 mt-1 flex items-center justify-between gap-3">
         {currentStep > 1 && currentStep < 4 ? (
@@ -851,9 +900,9 @@ const DonationFlow = () => {
         
         {/* Animated Active Step Filled Progress Line */}
         <div 
-          className="absolute left-[18px] sm:left-[24px] top-[18px] sm:top-[24px] -translate-y-1/2 h-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full z-0 transition-all duration-500 ease-in-out"
+          className="absolute left-[18px] sm:left-[24px] top-[18px] sm:top-[24px] -translate-y-1/2 h-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full z-0 transition-all duration-500 ease-in-out [--track-padding:36px] sm:[--track-padding:48px]"
           style={{ 
-            width: `calc(${((currentStep - 1) / (steps.length - 1)) * 100}% - ${currentStep === 1 ? 0 : 4}px)`
+            width: `calc(${((currentStep - 1) / (steps.length - 1))} * (100% - var(--track-padding)))`
           }}
         />
 

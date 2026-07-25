@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, Loader } from 'lucide-react';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -10,14 +10,16 @@ const Contact = () => {
     message: ''
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would send an API request
+    setIsSubmitting(true);
     setTimeout(() => {
+      setIsSubmitting(false);
       setIsSubmitted(true);
       setFormData({ name: '', email: '', subject: '', message: '' });
-    }, 1000);
+    }, 1200);
   };
 
   return (
@@ -169,12 +171,23 @@ const Contact = () => {
               </div>
  
               <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
+                whileHover={isSubmitting ? {} : { scale: 1.01 }}
+                whileTap={isSubmitting ? {} : { scale: 0.99 }}
                 type="submit"
-                className="w-full bg-indigo-600 text-white py-3 sm:py-4 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
+                disabled={isSubmitting}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-75 text-white py-3 sm:py-4 rounded-xl font-bold shadow-lg transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base cursor-pointer"
               >
-                Send Message <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                {isSubmitting ? (
+                  <>
+                    <Loader className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                    <span>Sending Message...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Send Message</span>
+                    <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </>
+                )}
               </motion.button>
             </form>
           )}

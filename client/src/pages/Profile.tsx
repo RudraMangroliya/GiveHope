@@ -410,14 +410,24 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                 transition={{ duration: 0.35 }}
                 className="space-y-4"
               >
-                <div className="flex justify-between items-center mb-2 px-1 profile-overview-header">
-                  <h3 className="text-xl font-extrabold text-slate-800 profile-overview-title">Support Overview</h3>
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest profile-overview-count">{donations.length} records found</span>
+                <div className="flex flex-col min-[380px]:flex-row min-[380px]:items-center justify-between gap-1 sm:gap-2 mb-3 px-1 profile-overview-header">
+                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-800 profile-overview-title">Support Overview</h3>
+                  <span className="text-[10px] min-[360px]:text-xs font-semibold text-slate-400 uppercase tracking-wider sm:tracking-widest profile-overview-count shrink-0">{donations.length} records found</span>
                 </div>
 
                 {loadingHistory ? (
-                  <div className="bg-white rounded-3xl border border-slate-100 shadow-sm">
-                    <LoadingState message="Retrieving your donation files..." height="h-64" />
+                  <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+                    <LoadingState
+                      message="Retrieving your donation files..."
+                      subMessages={[
+                        "Retrieving your donation files...",
+                        "Decrypting tax exemption receipts...",
+                        "Calculating total contributions...",
+                        "Preparing dashboard history..."
+                      ]}
+                      compact={true}
+                      height="min-h-[300px]"
+                    />
                   </div>
                 ) : donations.length === 0 ? (
                   <div className="bg-white rounded-3xl border border-slate-100 p-12 text-center space-y-4 shadow-sm flex flex-col items-center">
@@ -471,7 +481,7 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                               <div className="text-left min-[850px]:text-right w-full min-[500px]:w-auto">
                                 {isItem ? (
                                   <>
-                                    <span className="text-xs sm:text-sm font-extrabold text-slate-800 block">
+                                    <span className="text-base sm:text-lg font-black text-slate-900 block tracking-tight">
                                       {donation.quantity} {donation.quantityUnit}
                                     </span>
                                     <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100/60 px-2 py-0.5 rounded-full inline-block mt-0.5 uppercase tracking-wide">
@@ -480,7 +490,7 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                                   </>
                                 ) : (
                                   <>
-                                    <span className="text-xs sm:text-sm font-extrabold text-slate-800 block">₹{donation.amount}</span>
+                                    <span className="text-base sm:text-lg font-black text-slate-900 block tracking-tight">₹{donation.amount.toLocaleString('en-IN')}</span>
                                     <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100/60 px-2 py-0.5 rounded-full inline-block mt-0.5 uppercase tracking-wide">
                                       Cash Gift
                                     </span>
@@ -787,24 +797,62 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
 
                   <hr className="my-2 border-slate-50" />
 
-                  {/* Anonymous Toggle settings */}
-                  <div className="flex items-start gap-3 p-3.5 bg-slate-50/70 border border-slate-100 rounded-2xl">
-                    <input
-                      type="checkbox"
-                      id="edit-anonymous"
-                      name="isAnonymous"
-                      checked={editForm.isAnonymous}
-                      onChange={(e) => setEditForm({ ...editForm, isAnonymous: e.target.checked })}
-                      disabled={isUpdating}
-                      className="mt-1 h-4.5 w-4.5 text-indigo-600 border-slate-200 rounded-xl focus:ring-indigo-500/20 cursor-pointer"
-                    />
-                    <div className="space-y-0.5">
-                      <label htmlFor="edit-anonymous" className="block text-xs sm:text-sm font-bold text-slate-700 cursor-pointer select-none">
-                        Keep my support anonymous on the Honour Roll
-                      </label>
-                      <p className="text-[10px] sm:text-xs text-slate-400 font-semibold leading-relaxed">
-                        If selected, your donations will display under "Anonymous Supporter" on the public Honour Roll ranking.
-                      </p>
+                  {/* Modern Anonymous Toggle Setting Card */}
+                  <div
+                    onClick={() => !isUpdating && setEditForm({ ...editForm, isAnonymous: !editForm.isAnonymous })}
+                    className={`p-3.5 sm:p-4 rounded-2xl border transition-all duration-300 cursor-pointer select-none flex items-center justify-between gap-3 sm:gap-4 group ${
+                      editForm.isAnonymous
+                        ? 'bg-gradient-to-r from-indigo-50/80 via-white to-violet-50/80 border-indigo-200/90 shadow-md shadow-indigo-100/50'
+                        : 'bg-white hover:bg-slate-50/80 border-slate-200/80 shadow-sm'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 sm:gap-3.5 min-w-0 flex-1">
+                      <div className={`h-9 w-9 sm:h-10 sm:w-10 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 group-hover:scale-105 ${
+                        editForm.isAnonymous
+                          ? 'bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-200'
+                          : 'bg-slate-100 text-slate-400 group-hover:text-slate-600'
+                      }`}>
+                        <EyeOff className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
+                      </div>
+                      <div className="space-y-0.5 min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="text-xs sm:text-sm font-extrabold text-slate-800 tracking-tight leading-snug">
+                            Keep my support anonymous on the Honour Roll
+                          </h4>
+                          {editForm.isAnonymous && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-extrabold bg-indigo-100 text-indigo-700 border border-indigo-200/60">
+                              Active
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[10px] sm:text-xs text-slate-400 font-semibold leading-relaxed">
+                          If selected, your donations will display under "Anonymous Supporter" on public rankings.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Custom iOS Style Switch Toggle Button */}
+                    <div className="relative shrink-0 flex items-center">
+                      <input
+                        type="checkbox"
+                        id="edit-anonymous"
+                        name="isAnonymous"
+                        checked={editForm.isAnonymous}
+                        onChange={(e) => setEditForm({ ...editForm, isAnonymous: e.target.checked })}
+                        disabled={isUpdating}
+                        className="sr-only"
+                      />
+                      <div className={`w-11 h-6 sm:w-13 sm:h-7 rounded-full p-0.5 sm:p-1 transition-colors duration-300 ease-in-out cursor-pointer ${
+                        editForm.isAnonymous ? 'bg-gradient-to-r from-indigo-600 to-violet-600 shadow-sm' : 'bg-slate-200'
+                      }`}>
+                        <div className={`w-5 h-5 sm:w-5 sm:h-5 rounded-full bg-white shadow-md transform transition-transform duration-300 ease-in-out flex items-center justify-center ${
+                          editForm.isAnonymous ? 'translate-x-5 sm:translate-x-6' : 'translate-x-0'
+                        }`}>
+                          {editForm.isAnonymous && (
+                            <CheckCircle2 className="h-3 w-3 text-indigo-600" />
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
 

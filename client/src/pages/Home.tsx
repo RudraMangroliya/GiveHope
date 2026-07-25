@@ -58,7 +58,18 @@ const Home = () => {
   };
 
   if (loading) {
-    return <LoadingState message="Loading active campaigns..." height="h-64" />;
+    return (
+      <LoadingState
+        message="Loading active campaigns..."
+        subMessages={[
+          "Loading active campaigns...",
+          "Fetching fundraising progress...",
+          "Preparing campaign cards...",
+          "Almost ready..."
+        ]}
+        height="min-h-[60vh]"
+      />
+    );
   }
 
   return (

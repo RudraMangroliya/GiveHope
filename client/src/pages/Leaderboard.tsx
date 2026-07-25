@@ -98,7 +98,18 @@ export default function Leaderboard() {
   };
 
   if (loading) {
-    return <LoadingState message="Retrieving Supporter Honour Roll..." height="h-96" />;
+    return (
+      <LoadingState
+        message="Retrieving Supporter Honour Roll..."
+        subMessages={[
+          "Retrieving Supporter Honour Roll...",
+          "Gathering top contributors...",
+          "Calculating total impact scores...",
+          "Preparing rankings view..."
+        ]}
+        height="min-h-[60vh]"
+      />
+    );
   }
 
   return (
@@ -202,20 +213,20 @@ export default function Leaderboard() {
 
                     {/* Right: Contributions Summary */}
                     <div className="flex items-center gap-4 text-left min-[350px]:text-right shrink-0 pl-10.5 min-[350px]:pl-0 w-full min-[350px]:w-auto">
-                      <div className="space-y-0.5 w-full min-[350px]:w-auto">
+                      <div className="space-y-1 w-full min-[350px]:w-auto">
                         {supporter.amount > 0 && (
-                          <div className="text-xs sm:text-sm font-black text-slate-800 flex items-center gap-1 justify-start min-[350px]:justify-end">
-                            <Coins className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                          <div className="text-base sm:text-lg md:text-xl font-black text-slate-900 flex items-center gap-1.5 justify-start min-[350px]:justify-end tracking-tight">
+                            <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 shrink-0" />
                             <span>₹{supporter.amount.toLocaleString('en-IN')}</span>
                           </div>
                         )}
                         {supporter.items > 0 && (
-                          <div className="text-[10px] sm:text-xs font-extrabold text-indigo-600 flex items-center gap-1 justify-start min-[350px]:justify-end">
-                            <Gift className="h-3 w-3 text-indigo-500 shrink-0" />
+                          <div className="text-xs sm:text-sm md:text-base font-extrabold text-indigo-600 flex items-center gap-1.5 justify-start min-[350px]:justify-end">
+                            <Gift className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-indigo-500 shrink-0" />
                             <span>{supporter.items} item{supporter.items > 1 ? 's' : ''}</span>
                           </div>
                         )}
-                        <span className="text-[9px] text-slate-400 block font-semibold">
+                        <span className="text-[10px] sm:text-xs text-slate-400 block font-semibold">
                           Assisted {supporter.campaignsCount} cause{supporter.campaignsCount > 1 ? 's' : ''}
                         </span>
                       </div>

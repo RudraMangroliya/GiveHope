@@ -581,7 +581,18 @@ export default function Admin() {
   const categoriesList = ['Education', 'Health', 'Environment', 'Disaster Relief', 'Community', 'Animal Welfare'];
 
   if (loading && campaigns.length === 0) {
-    return <LoadingState message="Loading Admin Dashboard..." height="h-[60vh]" />;
+    return (
+      <LoadingState
+        message="Loading Admin Dashboard..."
+        subMessages={[
+          "Loading Admin Dashboard...",
+          "Verifying administrator credentials...",
+          "Fetching campaign registry & stats...",
+          "Preparing control center..."
+        ]}
+        height="min-h-[60vh]"
+      />
+    );
   }
 
   return (
@@ -707,8 +718,18 @@ export default function Admin() {
       {activeTab === 'analytics' && (
         <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-300">
           {loadingStats ? (
-            <div className="bg-white rounded-3xl border border-slate-100 p-12 text-center shadow-sm">
-              <LoadingState message="Calculating donation algorithms & monthly curves..." height="h-64" />
+            <div className="bg-white rounded-3xl border border-slate-100 p-6 sm:p-12 text-center shadow-sm overflow-hidden">
+              <LoadingState
+                message="Calculating donation algorithms & monthly curves..."
+                subMessages={[
+                  "Calculating donation algorithms & monthly curves...",
+                  "Aggregating transaction records...",
+                  "Computing monthly growth trends...",
+                  "Rendering breakdown charts..."
+                ]}
+                compact={true}
+                height="min-h-[300px]"
+              />
             </div>
           ) : !stats ? (
             <div className="bg-white rounded-3xl border border-slate-100 p-8 text-center text-slate-400 font-semibold shadow-sm">
