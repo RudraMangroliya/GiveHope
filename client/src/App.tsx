@@ -12,6 +12,7 @@ import Footer from './components/Footer';
 import FullScreenAuth from './components/FullScreenAuth';
 import Profile from './pages/Profile'; // Supporter dashboard view
 import Leaderboard from './pages/Leaderboard';
+import OfflineState from './components/OfflineState';
 
 // Automatically scroll window to top when routing changes
 function ScrollToTop() {
@@ -383,6 +384,7 @@ function App() {
   return (
     <Router>
       <ScrollToTop />
+      <OfflineState />
       <AppContent />
     </Router>
   );
