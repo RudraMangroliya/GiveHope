@@ -221,7 +221,7 @@ router.get('/my-donations', protect, async (req: AuthRequest, res) => {
     }
 
     const donations = await Donation.find({ email: user.email })
-      .populate('campaignId', 'title image')
+      .populate('campaignId', 'title image category')
       .sort({ date: -1 });
 
     res.json(donations);

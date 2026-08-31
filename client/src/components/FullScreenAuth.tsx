@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, User, Sparkles, Loader, Gift, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Loader, Gift, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
 import { API_BASE_URL } from '../config';
 
@@ -86,10 +86,9 @@ export default function FullScreenAuth({ onSuccess }: FullScreenAuthProps) {
             transition={{ duration: 0.6 }}
             className="space-y-2 min-[280px]:space-y-4"
           >
-            <div className="hidden min-[280px]:inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-sm border border-white/15 rounded-full text-xs font-bold text-indigo-200">
-              <Sparkles className="h-3.5 w-3.5" />
+            <span className="inline-block px-2.5 min-[280px]:px-3 py-0.5 min-[280px]:py-1 rounded-lg bg-white/10 backdrop-blur-md border border-white/15 text-[10px] min-[280px]:text-xs sm:text-sm font-semibold uppercase tracking-wider text-indigo-100 shadow-sm max-w-full">
               Empowering Community Giving
-            </div>
+            </span>
             <h1 className="text-xl min-[280px]:text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-none">
               Make a Real <br className="hidden md:block"/>
               <span className="bg-gradient-to-r from-indigo-200 to-indigo-100 bg-clip-text text-transparent">Visual Difference</span>

@@ -11,6 +11,7 @@ import axios from 'axios';
 import LoadingState from '../components/LoadingState';
 import { API_BASE_URL } from '../config';
 import { generate80GReceipt } from '../utils/generateReceipt';
+import { getCampaignImage, handleImageError } from '../utils/imageHelper';
 
 interface ProfileProps {
   user: {
@@ -29,7 +30,8 @@ interface Donation {
     _id: string;
     title: string;
     image: string;
-  };
+    category?: string;
+  } | null;
   donorName: string;
   email: string;
   amount: number;
@@ -464,13 +466,14 @@ export default function Profile({ user, onProfileUpdate }: ProfileProps) {
                             {/* Left segment */}
                             <div className="flex items-center gap-3.5 w-full min-[850px]:w-auto">
                               <img 
-                                src={donation.campaignId?.image || 'https://picsum.photos/seed/placeholder/200'} 
-                                alt={donation.campaignId?.title || 'Campaign'} 
-                                className="h-12 w-12 sm:h-14 sm:w-14 object-cover rounded-2xl shadow-inner border border-slate-100 shrink-0"
+                                src={getCampaignImage(donation.campaignId?.image, donation.campaignId?.category || donation.itemCategory || 'Community', donation._id)} 
+                                alt={donation.campaignId?.title || 'Community Cause'} 
+                                onError={(e) => handleImageError(e, donation.campaignId?.category || donation.itemCategory || 'Community', donation._id)}
+                                className="h-12 w-12 sm:h-14 sm:w-14 object-cover rounded-2xl shadow-inner border border-slate-100 shrink-0 bg-slate-100"
                               />
                               <div className="min-w-0">
                                 <h4 className="font-extrabold text-sm sm:text-base text-slate-800 truncate max-w-[200px] min-[320px]:max-w-[260px] sm:max-w-[340px] leading-snug">
-                                  {donation.campaignId?.title || 'Unknown Cause'}
+                                  {donation.campaignId?.title || (donation.donationType === 'item' ? `${donation.itemCategory || 'Community'} Relief Drive` : 'Community Empowerment Cause')}
                                 </h4>
                                 <span className="text-[10px] sm:text-xs text-slate-400 font-semibold block mt-0.5">{dateFormatted}</span>
                               </div>

@@ -5,6 +5,7 @@ import { Search, X, Filter } from 'lucide-react';
 import axios from 'axios';
 import LoadingState from '../components/LoadingState';
 import { API_BASE_URL } from '../config';
+import { getCampaignImage, handleImageError } from '../utils/imageHelper';
 
 interface Campaign {
   _id: string;
@@ -176,7 +177,7 @@ const Home = () => {
             layout
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8"
           >
-            {filteredCampaigns.map((campaign) => {
+            {filteredCampaigns.map((campaign, idx) => {
               const progress = Math.min((campaign.raised / campaign.goal) * 100, 100);
               
               return (
@@ -196,13 +197,14 @@ const Home = () => {
                   }}
                   className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 flex flex-col h-full"
                 >
-                  <div className="relative h-40 sm:h-48 overflow-hidden group">
+                  <div className="relative h-40 sm:h-48 overflow-hidden group bg-slate-100">
                     <img 
-                      src={campaign.image} 
+                      src={getCampaignImage(campaign.image, campaign.category, campaign._id || idx)} 
                       alt={campaign.title} 
+                      onError={(e) => handleImageError(e, campaign.category, campaign._id || idx)}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
-                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-semibold text-indigo-600">
+                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-semibold text-indigo-600 shadow-sm border border-slate-100/50">
                       {campaign.category}
                     </div>
                   </div>
